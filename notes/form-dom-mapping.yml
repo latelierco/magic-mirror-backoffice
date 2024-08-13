@@ -1,0 +1,163 @@
+form:
+  enum:   
+    - button:
+      # formaction
+      # formenctype
+      # formmethod
+      # formnovalidate
+      # formtarget
+      name:
+        valueType: text
+      required:
+        enum:
+          - true
+          - false
+      type:
+        enum:
+          - submit
+          - button
+      value:
+        valueType: text
+    - input:
+      type:
+        enum:
+          - button:
+            name:
+              valueType: text
+            required:
+              valueType:
+                enum:
+                  - true
+                  - false
+            type:
+              valueType:
+                enum:
+                  - submit
+                  - button
+            value:
+              valueType: text
+          - checkbox:
+            name:
+              valueType: text
+            checked:
+              valueType:
+                enum:
+                  - true
+                  - false
+            required:
+              valueType:
+                enum:
+                  - true
+                  - false
+            value:
+              valueType: text
+          - date:
+            name:
+              valueType: text
+            required:
+              valueType:
+                enum:
+                  - true
+                  - false
+            value:
+              valueType: text
+          - email:
+            name:
+              valueType: text
+            maxlength:
+              valueType: number
+            minlength:
+              valueType: number
+            multiple:
+              valueType:
+                enum:
+                  - true
+                  - false
+            pattern:
+              valueType: regexp
+            placeholder:
+              valueType: text
+            required:
+              valueType:
+                enum:
+                  - true
+                  - false
+            value:
+              valueType: text
+          - hidden:
+            name:
+              valueType: text
+            value:
+              valueType: text
+          # image
+          - number:
+            name:
+              valueType: text
+            max:
+              valueType: number
+            min:
+              valueType: number
+            placeholder:
+              valueType: text
+            required:
+              valueType:
+                enum:
+                  - true
+                  - false
+            value:
+              valueType: text
+          - radio:
+            name:
+              valueType: text
+            checked:
+              valueType:
+                enum:
+                  - true
+                  - false
+            required:
+              valueType:
+                enum:
+                  - true
+                  - false
+            value:
+              valueType: text
+          - submit:
+            # formaction
+            # formenctype
+            # formmethod
+            # formnovalidate
+            # formtarget
+            name:
+              valueType: text
+            required:
+              valueType:
+                enum:
+                  - true
+                  - false
+            value:
+              valueType: text
+          - text:
+            name:
+              valueType: text
+            maxlength:
+              valueType: number
+            minlength:
+              valueType: number
+            autocapitalize:
+              valueType:
+                enum:
+                  - none
+                  - sentences
+                  - words
+                  - characters
+            pattern:
+            valueType: regexp
+            placeholder:
+              valueType: text
+            required:
+              valueType:
+                enum:
+                  - true
+                  - false
+            value:
+              valueType: text
