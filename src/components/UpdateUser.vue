@@ -1,22 +1,24 @@
 <script setup>
 
   import { ref } from 'vue'
-  import { useRouter } from 'vue-router'
-  import { collection, addDoc, getFirestore } from 'firebase/firestore';
+  import { useRoute, useRouter } from 'vue-router'
+  import { doc, getDoc, setDoc, getFirestore } from 'firebase/firestore';
   import appUtils from '/src/assets/js/app-utils'
 
+  const route = useRoute()
   const router = useRouter()
   const db = getFirestore()
+  const { id: userId = null } = route.params;
   const delay = 1500
 
   const confirmation = ref({
-    fr: 'L\'utilisateur a bien été créé',
-    eng: 'User has been created',
+    fr: 'L\'utilisateur a bien été modifié',
+    eng: 'User has been updated',
   })
 
   const errMessage = ref({
-    fr: 'Une erreur est survenue lors de la création de l\'utilisateur',
-    eng: 'Creating user caused an error',
+    fr: 'Une erreur est survenue lors de la modification de l\'utilisateur',
+    eng: 'Updating user caused an error',
   })
 
   const userMessage = ref('')
@@ -45,12 +47,16 @@
     },
     save: async() => {
       try {
-        await addDoc(collection(db, 'users'), User.current);
+        await setDoc(doc(db, 'users', userId), User.current)
       } catch(err) {
-        throw Error('Error: saving to firebase has caused an error', { cause: err })
+        throw err
       }
     }
   }
+
+  const docRef = doc(db, 'users', userId)
+  const snap = await getDoc(docRef)
+  User.current = Object.assign({}, snap.data(), { id: userId })
 
   const UIConfirm = () => {
     const { fr, eng } = confirmation.value
@@ -83,7 +89,7 @@
   }
 
   const redirect = () => {
-    setTimeout(() => router.push('/users'), 1500)
+    setTimeout(() => router.push('/users'), delay)
   }
 
   const submitForm = async() => {
@@ -98,7 +104,7 @@
   }
 
 
-</script>
+ </script>
 
 
 <template>
@@ -123,7 +129,7 @@
 
           <form>
 
-            <h1 class="h1-main">Informations principales</h1>
+            <h1 class="h1-main">Informations principales</h1>            
 
             <v-divider class="h1-hr-main"></v-divider>
 

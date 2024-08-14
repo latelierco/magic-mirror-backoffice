@@ -34,9 +34,9 @@
     data: () => ({
       drawer: null,
       links: [
-        ['mdi-account', 'Users', '/users'],
-        ['mdi-account-edit', 'User Specific Content', '/users'],
-        ['mdi-pencil', 'Content', '/users']
+        ['mdi-account', 'Utilisateurs', '/users'],
+        ['mdi-account-edit', 'Contenu Personnalisé', '/users'],
+        ['mdi-pencil', 'Contenu', '/users']
       ],
     })
   }

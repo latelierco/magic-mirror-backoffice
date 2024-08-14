@@ -36,7 +36,7 @@ const router = createRouter({
       path: '/user/:id',
       name: 'UserById',
       props: true,
-      component: () => import('../pages/user-item.vue')
+      component: () => import('../pages/user-update.vue')
     },
     {
       path: '/user/add',

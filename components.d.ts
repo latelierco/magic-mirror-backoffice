@@ -9,14 +9,17 @@ declare module 'vue' {
   export interface GlobalComponents {
     AddUser: typeof import('./src/components/AddUser.vue')['default']
     AppFooter: typeof import('./src/components/AppFooter.vue')['default']
+    ConfirmationBackdrop: typeof import('./src/components/ConfirmationBackdrop.vue')['default']
     Form: typeof import('./src/components/Form.vue')['default']
     HelloWorld: typeof import('./src/components/HelloWorld.vue')['default']
     Inbox: typeof import('./src/components/inbox.vue')['default']
     LeftMenu: typeof import('./src/components/LeftMenu.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
+    UpdateUser: typeof import('./src/components/UpdateUser.vue')['default']
     User: typeof import('./src/components/User.vue')['default']
     User2: typeof import('./src/components/User2.vue')['default']
     Users: typeof import('./src/components/Users.vue')['default']
+    UserUpdate: typeof import('./src/components/UserUpdate.vue')['default']
   }
 }
