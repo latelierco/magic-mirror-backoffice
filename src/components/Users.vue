@@ -64,6 +64,7 @@
   const suppressAction = async() => {
     try {
       await iterateDelete(editUsers)
+      editUsers.value = [];
       UIConfirm()
     } catch(err) {
       UIAlert(err)
@@ -118,15 +119,15 @@
 
             <div class="user-item">
 
-              <div v-if="editUsers.includes(user.id)" class="mdi mdi-account-circle users-icon-checked"></div>
+              <button v-if="editUsers.includes(user.id)" class="mdi mdi-account-circle users-icon-checked"></button>
 
-              <div v-else class="mdi mdi-account-circle users-icon"></div>
+              <button v-else class="mdi mdi-account-circle users-icon"></button>
 
-              <input style="cursor: pointer;" :id="user.id" :value="user.id" type="checkbox" v-model="editUsers" class="user-item-input">
+              <input title="Sélectionner l'utilisateur" style="cursor: pointer;" :id="user.id" :value="user.id" type="checkbox" v-model="editUsers" class="user-item-input">
 
-              <RouterLink :to="'/user/' + user.id">
+              <RouterLink :to="'/user/' + user.id" title="Modifier l'utilisateur">
 
-                <span>{{ user.name_first }} {{ user.name_last }} - User {{ $route.params.id }}</span>
+                <span>{{ user.name_first }} {{ user.name_last }}</span>
 
               </RouterLink>
 
@@ -143,8 +144,8 @@
     </v-main>
   </v-app>
 
-  <RouterLink class="user-add-holder" :to="'/user/add'">
-    <div class="mdi mdi-account-plus user-add"></div>
+  <RouterLink class="user-add-holder" title="Ajouter un utilisateur" :to="'/user/add'">
+    <button class="mdi mdi-account-plus user-add"></button>
   </RouterLink>
 
   <div id="confirmation-holder" :class=" isActive === true ? 'fadein' : 'fadeout' ">
@@ -165,62 +166,3 @@
   }
 
 </script>
-
-
-<style>
-
-  #title-and-actions {
-    display: flex;
-    flex-direction: row;
-  }
-
-
-  #suppress-action {
-    font-size: 24px;
-    font-style: italic;
-    cursor: pointer;
-  }
-
-
-  #suppress-action::before {
-    content: '|';
-    font-style: normal;
-    margin-right: 28px;
-    opacity: .4;
-  }
-
-
-  #delete-icon {
-    font-size: 28px;
-  }
-
-  .user-add-holder {
-    position: absolute;
-    right: 80px;
-    bottom: 80px;
-    width: 80px;
-    height: 80px;
-    border: 3px solid #fff;
-    box-sizing: border-box;
-    border-radius: 40px;
-    opacity: .4;
-    color: #fff;
-    background-color: #06326C;
-  }
-
-
-  .user-add-holder:hover {
-    opacity: .8;
-  }
-
-  .user-add {
-    position: absolute;
-    font-size: 52px;
-    width: 52px;
-    height: 52px;
-    margin: auto;
-    top: -3px;
-    left: 7px;
-  }
-
-</style>

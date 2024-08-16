@@ -3,17 +3,24 @@
   import { ref } from 'vue'
   import { useRoute, useRouter } from 'vue-router'
   import { doc, getDoc, setDoc, getFirestore } from 'firebase/firestore';
+  import config from '../config'
   import appUtils from '/src/assets/js/app-utils'
+
+  const {
+    obectFormatstrings,
+    extractErrContent
+  } = appUtils
+
 
   const route = useRoute()
   const router = useRouter()
   const db = getFirestore()
-  const { id: userId = null } = route.params;
-  const delay = 1500
+  const { id = null } = route.params;
+  const { delay } = config
 
   const confirmation = ref({
     fr: 'L\'utilisateur a bien été modifié',
-    eng: 'User has been updated',
+    eng: 'User has been updated successfully',
   })
 
   const errMessage = ref({
@@ -24,39 +31,23 @@
   const userMessage = ref('')
   const isActive = ref(false)
   const backdropColor = ref('blue')
+  const userId = ref(id);
 
   const User = {
-    current: {
-      name_first: '',
-      name_last: '',
-      location_home: {
-        address: '',
-        zip_code: '',
-        city: '',
-      },
-      location_work: {
-        address: '46 rue de l\'Arbre Sec',
-        zip_code: '75001',
-        city: 'Paris',
-      },      
-    },
-    stringFormat: () => {
-      for (const key in User.current) {
-        User.current[key] = appUtils.capitalize(User.current[key])
-      }
-    },
+    current: {},
+    stringFormat: () => obectFormatstrings(User.current),
     save: async() => {
       try {
-        await setDoc(doc(db, 'users', userId), User.current)
+        await setDoc(doc(db, 'users', userId.value), User.current)
       } catch(err) {
-        throw err
+        throw Error('Error: saving user to firebase has caused an error', { cause: err })
       }
     }
   }
 
-  const docRef = doc(db, 'users', userId)
+  const docRef = doc(db, 'users', userId.value)
   const snap = await getDoc(docRef)
-  User.current = Object.assign({}, snap.data(), { id: userId })
+  User.current = Object.assign({}, snap.data(), { id: userId.value })
 
   const UIConfirm = () => {
     const { fr, eng } = confirmation.value
@@ -78,10 +69,6 @@
 
   const assignUserMessage = msg => {
     userMessage.value = msg
-  }
-
-  const extractErrContent = err => {
-    return err?.cause && err.cause || err.stack
   }
 
   const userMessageFadeOut = () => {
@@ -166,11 +153,15 @@
 
             <v-divider class="h2-hr-main"></v-divider>
 
-            <button type="button" class="latelier-form-input latelier-form-submit mt-6 mb-4" @click="submitForm">Save</button>
+            <button type="button" class="latelier-form-input latelier-form-submit mt-6 mb-4" @click="submitForm">Enregistrer</button>
 
           </form>
 
       </v-container>
+
+      <RouterLink class="user-add-holder" :to="'/user/photo/add/' + userId">
+        <button class="mdi mdi-camera-plus user-add"></button>
+      </RouterLink>
 
       <div id="confirmation-holder" :class=" isActive === true ? 'fadein' : 'fadeout' ">
         <div id="backdrop-el" :class=" backdropColor "></div>

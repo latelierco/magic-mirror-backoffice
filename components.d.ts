@@ -8,6 +8,7 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     AddUser: typeof import('./src/components/AddUser.vue')['default']
+    AddUserPhoto: typeof import('./src/components/AddUserPhoto.vue')['default']
     AppFooter: typeof import('./src/components/AppFooter.vue')['default']
     ConfirmationBackdrop: typeof import('./src/components/ConfirmationBackdrop.vue')['default']
     Form: typeof import('./src/components/Form.vue')['default']

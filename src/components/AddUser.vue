@@ -3,15 +3,22 @@
   import { ref } from 'vue'
   import { useRouter } from 'vue-router'
   import { collection, addDoc, getFirestore } from 'firebase/firestore';
+  import config from '../config'
   import appUtils from '/src/assets/js/app-utils'
+
+  const {
+    obectFormatstrings,
+    extractErrContent
+  } = appUtils
+
 
   const router = useRouter()
   const db = getFirestore()
-  const delay = 1500
+  const { delay } = config
 
   const confirmation = ref({
     fr: 'L\'utilisateur a bien été créé',
-    eng: 'User has been created',
+    eng: 'User has been created successfully',
   })
 
   const errMessage = ref({
@@ -36,18 +43,15 @@
         address: '46 rue de l\'Arbre Sec',
         zip_code: '75001',
         city: 'Paris',
-      },      
+      },
+      photos: [],
     },
-    stringFormat: () => {
-      for (const key in User.current) {
-        User.current[key] = appUtils.capitalize(User.current[key])
-      }
-    },
+    stringFormat: () => obectFormatstrings(User.current),
     save: async() => {
       try {
         await addDoc(collection(db, 'users'), User.current);
       } catch(err) {
-        throw Error('Error: saving to firebase has caused an error', { cause: err })
+        throw Error('Error: saving user to firebase has caused an error', { cause: err })
       }
     }
   }
@@ -72,10 +76,6 @@
 
   const assignUserMessage = msg => {
     userMessage.value = msg
-  }
-
-  const extractErrContent = err => {
-    return err?.cause && err.cause || err.stack
   }
 
   const userMessageFadeOut = () => {
@@ -160,7 +160,7 @@
 
             <v-divider class="h2-hr-main"></v-divider>
 
-            <button type="button" class="latelier-form-input latelier-form-submit mt-6 mb-4" @click="submitForm">Save</button>
+            <button type="button" class="latelier-form-input latelier-form-submit mt-6 mb-4" @click="submitForm">Enregistrer</button>
 
           </form>
 

@@ -44,6 +44,13 @@ const router = createRouter({
       props: true,
       component: () => import('../pages/user-add.vue')
     },
+    {
+      path: '/user/photo/add/:id',
+      name: 'UserPhotoAdd',
+      props: true,
+      component: () => import('../pages/user-photo-add.vue')
+    },
+    // 
     // {
     //   path: '/about',
     //   name: 'about',

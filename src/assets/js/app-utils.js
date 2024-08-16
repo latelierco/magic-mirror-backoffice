@@ -21,6 +21,21 @@ const appUtils = {
 				.trim()
 		}
 	},
+	obectFormatstrings: obj => {
+		for (const key in obj) {
+			obj[key] = appUtils.capitalize(obj[key])
+		}
+	},
+	extractErrContent: err => {
+		return err?.cause && err.cause || err.stack
+	},
+	slugify: str => {
+		return str.trim()
+			.toLowerCase()
+			.normalize('NFD')
+			.replace(/[\u0300-\u036f]/g, '')
+			.replace(' ', '-')
+	},
 }
 
 export default appUtils

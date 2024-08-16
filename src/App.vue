@@ -38,7 +38,7 @@
   }
 
   #backdrop-el {
-    opacity: 0.7;
+    opacity: 0.8;
     z-index: 1200;
   }
 
@@ -215,6 +215,60 @@
 
   .latelier-form-submit:active {
     background-color: #4deea1;
+  }
+
+  #title-and-actions {
+    display: flex;
+    flex-direction: row;
+  }
+
+
+  #suppress-action {
+    font-size: 24px;
+    font-style: italic;
+    cursor: pointer;
+  }
+
+
+  #suppress-action::before {
+    content: '|';
+    font-style: normal;
+    margin-right: 28px;
+    opacity: .4;
+  }
+
+
+  #delete-icon {
+    font-size: 28px;
+  }
+
+  .user-add-holder {
+    position: fixed;
+    right: 80px;
+    bottom: 80px;
+    width: 55px;
+    height: 55px;
+    border: 4px solid #fff;
+    box-sizing: border-box;
+    border-radius: 27px;
+    opacity: .4;
+    color: #fff;
+    background-color: #06326C;
+  }
+
+
+  .user-add-holder:hover {
+    opacity: .8;
+  }
+
+  .user-add {
+    position: absolute;
+    font-size: 33px;
+    width: 42px;
+    height: 42px;
+    margin: auto;
+    top: -2px;
+    left: 1px;
   }
 
 </style>
