@@ -14,7 +14,7 @@
 
   const router = useRouter()
   const db = getFirestore()
-  const { delay } = config
+  const { DELAY } = config
 
   const confirmation = ref({
     fr: 'L\'utilisateur a bien été créé',
@@ -79,7 +79,7 @@
   }
 
   const userMessageFadeOut = () => {
-    setTimeout(() => isActive.value = false, delay)
+    setTimeout(() => isActive.value = false, DELAY)
   }
 
   const redirect = () => {

@@ -2,15 +2,17 @@
 
   import { ref, watch, onMounted } from 'vue'
   import { useRoute, useRouter } from 'vue-router'
-  import { collection, addDoc, getFirestore } from 'firebase/firestore';
+  import { doc, collection, getDoc, addDoc, getFirestore } from 'firebase/firestore';
   import config from '../config'
   import appUtils from '/src/assets/js/app-utils'
   import photoCapture from '/src/assets/js/photo'
 
+
   const {
     obectFormatstrings,
     extractErrContent,
-    slugify
+    slugify,
+    getUuid,
   } = appUtils
 
 
@@ -18,7 +20,15 @@
   const router = useRouter()
   const db = getFirestore()
   const { id = null } = route.params;
-  const { delay } = config
+  const {
+    DELAY,
+    HTTP_SERVICE: {
+      URL,
+      PORT,
+      ROUTES: { GET_USER_PHOTOS }
+    }
+  } = config
+
 
   const confirmation = ref({
     fr: 'L\'utilisateur a bien été créé',
@@ -36,6 +46,7 @@
 
   const User = {
     current: {
+      user_name: '',
       name_first: '',
       name_last: '',
       location_home: {
@@ -60,25 +71,32 @@
     }
   }
 
+
   const video = ref()
   const canvas = ref()
   const photo = ref()
   const photoCaptureButton = ref()
   const pictureIdx = ref()
 
+  const userId = ref(id);
   const userMessage = ref('')
   const slug = ref('')
   const isActive = ref(false)
   const backdropColor = ref('blue')
   const userPhotos = ref({})
   const photoList = ref(User.current.photos)
-  let hasFlash = ref(false)
-  let featured = ref()
-  let translateValue = ref()
-  let stripShowing = ref(false)
-  let promptShowing = ref(false)
-  let backdropHigher = ref(false)
-  let imageToDelete = ref()
+  const hasFlash = ref(false)
+  const featured = ref()
+  const translateValue = ref()
+  const stripShowing = ref(false)
+  const promptShowing = ref(false)
+  const backdropHigher = ref(false)
+  const imageToDelete = ref()
+
+
+  const docRef = doc(db, 'users', userId.value)
+  const snap = await getDoc(docRef)
+  User.current = Object.assign({}, snap.data(), { id: userId.value })
 
   watch(
     () => userPhotos,
@@ -90,7 +108,7 @@
         photoList.value.push(picture)
         console.debug('id', id)
         hasFlash.value = true;
-        setTimeout(() => { hasFlash.value = false }, 1000)
+        setTimeout(() => { hasFlash.value = false }, 500)
       }
     },
     { deep: true }
@@ -134,7 +152,7 @@
   }
 
   const redirect = () => {
-    setTimeout(() => router.push('/users'), delay)
+    setTimeout(() => router.push('/users'), DELAY)
   }
 
   const submitForm = async() => {
@@ -148,6 +166,36 @@
     }
   }
 
+  const getExistingPhotos = () => {
+    const { user_name: userName } = User.current;
+    console.debug('userName', userName);
+
+    return new Promise((resolve, reject) => {
+      const url = `http://${ URL }:${ PORT }${ GET_USER_PHOTOS }${ userName }`
+      console.debug('url', url)
+      return fetch(url)
+        .then(resp => {
+          if (!resp.ok)
+            return reject(`Error: calling backoffice service failed with status code ${ resp.status }`);
+          return resp.json()
+        })
+        .then(list => {
+          console.debug('respBody', list)
+          // return list.map(photo => {
+          //   const uuid = getUuid()
+
+          //   {
+          //     id: uuid,
+          //     savedStatus: true,
+          //     deleteStatus: false,
+          //     captureTime: Date.now(),
+          //     data
+          //   }
+          // })
+        })
+    });
+  };
+
   onMounted(() => {
 
     document.body.addEventListener('keydown', e => {
@@ -157,6 +205,8 @@
       ) return
       backdropClose()
     })
+
+    const existingPhotos = getExistingPhotos();
 
     setTimeout(() => {
       photoCapture.startup(userPhotos.value)

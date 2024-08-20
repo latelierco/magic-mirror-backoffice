@@ -6,7 +6,7 @@
 
   const db = useFirestore()
   const users = useCollection(collection(db, 'users'))
-  const delay = 1500
+  const DELAY = 1500
 
   const confirmation = ref({
     fr: 'Les utilisateurs ont bien été supprimés',
@@ -28,7 +28,7 @@
       console.debug('user', user)
       return await deleteDoc(doc(db, 'users', user));
     })
-    setTimeout(() => Promise.all(ps), delay)
+    setTimeout(() => Promise.all(ps), DELAY)
   }
 
   const UIConfirm = () => {
@@ -58,7 +58,7 @@
   }
 
   const userMessageFadeOut = () => {
-    setTimeout(() => isActive.value = false, delay)
+    setTimeout(() => isActive.value = false, DELAY)
   }
 
   const suppressAction = async() => {

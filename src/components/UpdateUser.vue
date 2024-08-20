@@ -16,7 +16,7 @@
   const router = useRouter()
   const db = getFirestore()
   const { id = null } = route.params;
-  const { delay } = config
+  const { DELAY } = config
 
   const confirmation = ref({
     fr: 'L\'utilisateur a bien été modifié',
@@ -72,11 +72,11 @@
   }
 
   const userMessageFadeOut = () => {
-    setTimeout(() => isActive.value = false, delay)
+    setTimeout(() => isActive.value = false, DELAY)
   }
 
   const redirect = () => {
-    setTimeout(() => router.push('/users'), delay)
+    setTimeout(() => router.push('/users'), DELAY)
   }
 
   const submitForm = async() => {

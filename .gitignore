@@ -21,3 +21,6 @@ pnpm-debug.log*
 *.sln
 *.sw?
 
+# http-service
+http-service/node_modules
+

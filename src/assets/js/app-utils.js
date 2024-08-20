@@ -36,6 +36,7 @@ const appUtils = {
 			.replace(/[\u0300-\u036f]/g, '')
 			.replace(' ', '-')
 	},
+	getUuid: () => window.crypto.randomUUID(),
 }
 
 export default appUtils
