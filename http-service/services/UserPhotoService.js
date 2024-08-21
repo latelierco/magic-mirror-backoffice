@@ -9,7 +9,6 @@ class UserPhotoService {
 
 	async getDirectoryContent(user) {
 		const dirPath = this.getDirectoryPath(user)
-		// console.debug('///// dirPath', dirPath)
 		if (await this.directoryExists(dirPath) === false) {
 			await this.createDirectory(dirPath)
 			return []
@@ -32,25 +31,25 @@ class UserPhotoService {
 
 	async getPhotoFiles(dirPath) {
 		const files = await readdir(dirPath)
-		const ps = files.map(file => {
-				const filePath = this.getFilePath(dirPath, file)
+		const ps = files.map(fileName => {
+				const filePath = this.getFilePath(dirPath, fileName)
 				const mimeType = this.getMimeType(filePath)
 				return {
 					mimeType,
 					filePath,
-					file
+					fileName
 				}
 			})
 			.filter(obj => /^image\/(jpeg|png)$/.test(obj.mimeType))
 			.map(async(obj) => {
 				const fileCreatedAt = await this.getCreatedDate(obj.filePath)
-				const fileToBase64 = await this.toBase64(obj.filePath)
+				const data = await this.toBase64(obj.filePath)
 				return Object.assign(
 					{},
 					obj,
 					{
 						fileCreatedAt,
-						fileToBase64,
+						fileToBase64: `data:${ obj.mimeType };base64,${ data }`,
 						saveStatus: true,
 						deleteStatus: false
 					}

@@ -14,7 +14,7 @@ const photoCapture = (() => {
   let photoCaptureButton = null
   let canvasInterval = null
 
-  const startup = userPhotos => {
+  const startup = photoList => {
 
     const {
       video,
@@ -25,7 +25,6 @@ const photoCapture = (() => {
     webcamStart(video)
     videoSetup(video)
     videoToCanvas({ video, canvas })
-    buttonSetup({ video, canvas, photoCaptureButton, userPhotos })
   }
 
   const getDomElements = () => {
@@ -89,37 +88,6 @@ const photoCapture = (() => {
     })
   }
 
-  const buttonSetup = options => {
-    const { video, canvas, photoCaptureButton, userPhotos } = options
-    photoCaptureButton.addEventListener(
-      'click',
-      e => {
-        e.preventDefault()
-        const uuid = getUuid()
-        const data = takepicture({ video, canvas })
-        userPhotos[uuid] = {
-          id: uuid,
-          savedStatus: false,
-          deleteStatus: false,
-          captureTime: Date.now(),
-          data
-        }
-        setTimeout(() => video.play(), 1000)
-      },
-      false,
-    )
-  }
-
-  const takepicture = options => {
-    const { video, canvas } = options
-    const context = canvas.getContext('2d')
-    video.pause()
-    context.drawImage(video, 0, 0, width, height)
-    return canvas.toDataURL('image/jpeg')
-  }
-
-  const getUuid = () => window.crypto.randomUUID();
-  console.info('[INFO] photo script has loaded')
 
   return { startup }
 

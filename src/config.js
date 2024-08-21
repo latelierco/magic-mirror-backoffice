@@ -1,11 +1,11 @@
 const config = {
+	VIDEO_VIEWPORT: {
+		WIDTH: 640
+	},
 	DELAY: 1500,
 	HTTP_SERVICE: {
 		URL: '127.0.0.1',
-		PORT: 7000,
-		ROUTES: {
-			GET_USER_PHOTOS: '/users/user/photos/'
-		}
+		PORT: 7000
 	}
 }
 

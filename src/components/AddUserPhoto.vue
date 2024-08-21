@@ -21,11 +21,13 @@
   const db = getFirestore()
   const { id = null } = route.params;
   const {
+    VIDEO_VIEWPORT : {
+      WIDTH
+    },
     DELAY,
     HTTP_SERVICE: {
       URL,
-      PORT,
-      ROUTES: { GET_USER_PHOTOS }
+      PORT
     }
   } = config
 
@@ -75,7 +77,7 @@
   const video = ref()
   const canvas = ref()
   const photo = ref()
-  const photoCaptureButton = ref()
+  // const photoCaptureButton = ref()
   const pictureIdx = ref()
 
   const userId = ref(id);
@@ -83,7 +85,6 @@
   const slug = ref('')
   const isActive = ref(false)
   const backdropColor = ref('blue')
-  const userPhotos = ref({})
   const photoList = ref(User.current.photos)
   const hasFlash = ref(false)
   const featured = ref()
@@ -98,21 +99,6 @@
   const snap = await getDoc(docRef)
   User.current = Object.assign({}, snap.data(), { id: userId.value })
 
-  watch(
-    () => userPhotos,
-    async newList => {
-      for (const id in newList.value) {
-        const picture = newList.value[id]
-        if (photoList.value.some(item => item.id === picture.id))
-          continue
-        photoList.value.push(picture)
-        console.debug('id', id)
-        hasFlash.value = true;
-        setTimeout(() => { hasFlash.value = false }, 500)
-      }
-    },
-    { deep: true }
-  )
 
   const UIConfirm = () => {
     const { fr, eng } = confirmation.value
@@ -135,7 +121,6 @@
   const UIWarning = () => {
     backdropColor.value = 'red'
     const { fr } = warningMessage.value
-    console.debug('fr', fr)
     assignUserMessage(fr)
     isActive.value = true
     backdropHigher.value = true
@@ -155,6 +140,38 @@
     setTimeout(() => router.push('/users'), DELAY)
   }
 
+  const capturePhoto = e => {
+
+    e.preventDefault()
+    hasFlash.value = true;
+    video.value.pause()
+    const data = getCaptureData()
+
+    const photoObj = {
+      id: getUuid(),
+      deleteStatus: false,
+      fileToBase64: data,
+      saveStatus: false
+    }
+    photoList.value.push(photoObj)
+
+    setTimeout(() => {
+      video.value.play()
+      hasFlash.value = false
+    }, 1000)
+  }
+
+  const getCaptureData = () => {
+    const height = getVideoHeight()
+    const context = canvas.value.getContext('2d')
+    context.drawImage(video.value, 0, 0, WIDTH, height)
+    return canvas.value.toDataURL('image/jpeg')
+  }
+
+  const getVideoHeight = () => {
+    return video.value.videoHeight
+  }
+
   const submitForm = async() => {
     try {
       User.stringFormat()
@@ -168,11 +185,9 @@
 
   const getExistingPhotos = () => {
     const { user_name: userName } = User.current;
-    console.debug('userName', userName);
 
     return new Promise((resolve, reject) => {
-      const url = `http://${ URL }:${ PORT }${ GET_USER_PHOTOS }${ userName }`
-      console.debug('url', url)
+      const url = `http://${ URL }:${ PORT }/users/${ userName }/photos`
       return fetch(url)
         .then(resp => {
           if (!resp.ok)
@@ -180,18 +195,10 @@
           return resp.json()
         })
         .then(list => {
-          console.debug('respBody', list)
-          // return list.map(photo => {
-          //   const uuid = getUuid()
-
-          //   {
-          //     id: uuid,
-          //     savedStatus: true,
-          //     deleteStatus: false,
-          //     captureTime: Date.now(),
-          //     data
-          //   }
-          // })
+          return list.forEach(photo => {
+            photo.id = getUuid()
+            photoList.value.push(photo)
+          })
         })
     });
   };
@@ -206,10 +213,10 @@
       backdropClose()
     })
 
-    const existingPhotos = getExistingPhotos();
+    getExistingPhotos();
 
     setTimeout(() => {
-      photoCapture.startup(userPhotos.value)
+      photoCapture.startup(photoList.value)
     }, 250)
   })
 
@@ -235,10 +242,11 @@
   }
 
   const deleteConfirmed = () => {
-    console.debug(imageToDelete.value)
     isActive.value = false
     promptShowing.value = false
-    userPhotos.value[imageToDelete.value].deleteStatus = true
+    photoList.value
+      .find(image => image.id === imageToDelete.value)
+      .deleteStatus = true
   }
 
   const nextPicture = e => {
@@ -339,13 +347,13 @@
               <div id="photo-list-holder">
 
                 <div id="photo-list">
-                  
-                  <template v-for="picture in userPhotos" :key="picture.id">
+
+                  <template v-for="picture in photoList" :key="picture.id">
 
                     <div class="picture-item" :class=" picture.deleteStatus === false ? 'showing' : '' " >
 
                       <div class="user-thumbnail-holder thumnail-action-margin-right">
-                        <img ref="picture.id" class="user-thumbnail fadein" :src="picture.data">
+                        <img ref="picture.id" class="user-thumbnail fadein" :src="picture.fileToBase64">
                         <div class="thumbnail-actions">
                           <div class="actions">
                             <button class="mdi mdi-magnify-plus-outline action-button" v-bind="{ id: picture.id }" @click="zoom"></button>
@@ -370,7 +378,7 @@
 
             <v-divider class="h2-hr-main mt-5"></v-divider>
 
-            <button id="photo-capture-button" ref="photoCaptureButton" type="button" class="latelier-form-input latelier-form-submit mt-4">
+            <button id="photo-capture-button" type="button" class="latelier-form-input latelier-form-submit mt-4" @click="capturePhoto">
               Prendre une photo
             </button> 
 
@@ -414,7 +422,7 @@
 
               <div class="picture-block" :class=" featured === index ? 'featured' : '' ">
 
-                <img class="picture-el" :src="picture.data" />
+                <img class="picture-el" :src="picture.fileToBase64" />
 
                 <div class="picture-actions-block" :class=" featured === index  ? 'action-featured' : '' ">
                   
