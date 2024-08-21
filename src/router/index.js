@@ -33,19 +33,19 @@ const router = createRouter({
       component: () => import('../pages/users-list.vue')
     },
     {
-      path: '/user/:id',
+      path: '/users/:id',
       name: 'UserById',
       props: true,
       component: () => import('../pages/user-update.vue')
     },
     {
-      path: '/user/add',
+      path: '/users/add',
       name: 'UserAdd',
       props: true,
       component: () => import('../pages/user-add.vue')
     },
     {
-      path: '/user/photo/add/:id',
+      path: '/users/:id/photo/add',
       name: 'UserPhotoAdd',
       props: true,
       component: () => import('../pages/user-photo-add.vue')

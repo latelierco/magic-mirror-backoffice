@@ -125,7 +125,7 @@
 
               <input title="Sélectionner l'utilisateur" style="cursor: pointer;" :id="user.id" :value="user.id" type="checkbox" v-model="editUsers" class="user-item-input">
 
-              <RouterLink :to="'/user/' + user.id" title="Modifier l'utilisateur">
+              <RouterLink :to="'/users/' + user.id" title="Modifier l'utilisateur">
 
                 <span>{{ user.name_first }} {{ user.name_last }}</span>
 
@@ -144,7 +144,7 @@
     </v-main>
   </v-app>
 
-  <RouterLink class="user-add-holder" title="Ajouter un utilisateur" :to="'/user/add'">
+  <RouterLink class="user-add-holder" title="Ajouter un utilisateur" :to="'/users/add'">
     <button class="mdi mdi-account-plus user-add"></button>
   </RouterLink>
 
@@ -154,15 +154,3 @@
   </div>
 
 </template>
-
-<script>
-
-  export default {
-    data: () => ({}),
-    mounted: () => {
-      const userItems = document.querySelectorAll('.user-item')
-      console.debug('userItems', userItems.length)
-    }
-  }
-
-</script>

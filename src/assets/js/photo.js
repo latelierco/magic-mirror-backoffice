@@ -11,15 +11,15 @@ const photoCapture = (() => {
   let streaming = false
   let video = null
   let canvas = null
-  let photoCaptureButton = null
   let canvasInterval = null
 
   const startup = photoList => {
 
+    console.debug('/////////////////// starting up video')
+
     const {
       video,
-      canvas,
-      photoCaptureButton
+      canvas
     } = getDomElements()
 
     webcamStart(video)
@@ -30,12 +30,10 @@ const photoCapture = (() => {
   const getDomElements = () => {
     video = document.getElementById('video')
     canvas = document.getElementById('canvas')
-    photoCaptureButton = document.getElementById('photo-capture-button')
 
     return {
       video,
-      canvas,
-      photoCaptureButton
+      canvas
     }
   }
 

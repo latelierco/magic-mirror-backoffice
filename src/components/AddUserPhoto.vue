@@ -7,11 +7,17 @@
   import appUtils from '/src/assets/js/app-utils'
   import photoCapture from '/src/assets/js/photo'
 
+  import {
+    AddUserPhotosError,
+    GetExistingPhotosError,
+    SaveUserPhotosError
+  } from '../assets/js/errors'
 
   const {
     obectFormatstrings,
     extractErrContent,
     slugify,
+    getPhotoId,
     getUuid,
   } = appUtils
 
@@ -33,13 +39,23 @@
 
 
   const confirmation = ref({
-    fr: 'L\'utilisateur a bien été créé',
-    eng: 'User has been created successfully',
+    fr: 'Les images de l\'utilisateur ont bien été enregistrées',
+    eng: 'User pictures have been saved successfully',
   })
 
   const errMessage = ref({
-    fr: 'Une erreur est survenue lors de la création de l\'utilisateur',
-    eng: 'Creating user caused an error',
+    AddUserPhotosError: {
+      fr: 'Une erreur inconnue est survenue sur la page',
+      eng: 'An unknown error occured on page',
+    },
+    GetExistingPhotosError: {
+      fr: 'Une erreur est survenue lors de la récupération des photos de l\'utilisateur',
+      eng: 'Getting user photos caused an error',
+    },
+    SaveUserPhotosError: {
+      fr: 'Une erreur est survenue lors de l\'enregistrement des photos de l\'utilisateur',
+      eng: 'Saving user photos caused an error',
+    },
   })
 
   const warningMessage = ref({
@@ -60,16 +76,32 @@
         address: '46 rue de l\'Arbre Sec',
         zip_code: '75001',
         city: 'Paris',
-      },
-      photos: [],
-    },
-    stringFormat: () => obectFormatstrings(User.current),
-    save: async() => {
-      try {
-        await addDoc(collection(db, 'users'), User.current);
-      } catch(err) {
-        throw Error('Error: saving user to firebase has caused an error', { cause: err })
       }
+    },
+    getSlug: () => slugify(User.current.name_first),
+    capitalize: () => obectFormatstrings(User.current),
+    save: () => {
+
+      console.debug('fetch 1')
+      const errMessage = 'Error: calling backoffice HTTP service failed with status code'
+
+      const url = getHttpServiceUrl()
+      const body = stripBody()
+
+      return fetch(url, {
+        method: 'PATCH',
+        headers: {
+          'content-type': 'application/json'
+        },
+        body: JSON.stringify(body)
+      })
+        .then(resp => {
+          console.debug('fetch 2')
+          if (!resp.ok)
+            return Promise.reject(new SaveUserPhotosError(`${ errMessage } ${ resp.status }`))
+          return resp.json()
+        })
+        .then(list => toPhotoList(list))
     }
   }
 
@@ -77,21 +109,23 @@
   const video = ref()
   const canvas = ref()
   const photo = ref()
-  // const photoCaptureButton = ref()
   const pictureIdx = ref()
+  const photoList = ref([])
 
   const userId = ref(id);
   const userMessage = ref('')
   const slug = ref('')
-  const isActive = ref(false)
+
+  const backdropIsActive = ref(false)
   const backdropColor = ref('blue')
-  const photoList = ref(User.current.photos)
   const hasFlash = ref(false)
   const featured = ref()
   const translateValue = ref()
   const stripShowing = ref(false)
+  const messageElShowing = ref(false)
+  const alertConfirmShowing = ref(false)
   const promptShowing = ref(false)
-  const backdropHigher = ref(false)
+  const backdropZIndexHigher = ref(false)
   const imageToDelete = ref()
 
 
@@ -100,44 +134,60 @@
   User.current = Object.assign({}, snap.data(), { id: userId.value })
 
 
-  const UIConfirm = () => {
+  const UIConfirm = async() => {
+    backdropColor.value = 'blue'
     const { fr, eng } = confirmation.value
     assignUserMessage(fr)
-    isActive.value = true
     console.info(`[INFO] ${ eng }`)
-    userMessageFadeOut()
+    await userMessageFadeOut()
   }
 
-  const UIAlert = err => {
+  const UIAlert = async(err) => {
     backdropColor.value = 'red'
-    const { fr, eng } = errMessage.value
+    const errName = getErrorName(err)
+
+    const { fr, eng } = errMessage?.value?.[errName] ||
+      errMessage.value['AddUserPhotosError']
+
     assignUserMessage(fr)
-    isActive.value = true
+    alertConfirmShowing.value = true
+
     console.error(`[ERROR] ${ eng }`)
-    console.error(extractErrContent(err))
-    userMessageFadeOut()
+    console.error(err)
   }
 
-  const UIWarning = () => {
+  const UIWarning = async() => {
     backdropColor.value = 'red'
     const { fr } = warningMessage.value
     assignUserMessage(fr)
-    isActive.value = true
-    backdropHigher.value = true
+    backdropZIndexHigher.value = true
+  }
+
+  const getErrorName = err => {
+    return err.constructor.name
   }
 
   const assignUserMessage = msg => {
     userMessage.value = msg
+    backdropIsActive.value = true
+    messageElShowing.value = true
   }
 
-  const backdropClose = () => {
-    stripShowing.value = false
-    promptShowing.value = false
-    setTimeout(() => isActive.value = false, 250)
+  const userMessageFadeOut = (delay = null) => {
+    return new Promise(resolve => {
+      return setTimeout(() => {
+        stripShowing.value = false
+        alertConfirmShowing.value = false
+        promptShowing.value = false
+        messageElShowing.value = false
+        backdropIsActive.value = false
+        return resolve()
+      }, !!delay && delay || DELAY)      
+    })
   }
 
   const redirect = () => {
-    setTimeout(() => router.push('/users'), DELAY)
+    setTimeout(() => router.push(`/users/${ userId.value }`), DELAY)
   }
 
   const capturePhoto = e => {
@@ -151,6 +201,7 @@
       id: getUuid(),
       deleteStatus: false,
       fileToBase64: data,
+      mimeType: 'image/jpeg',
       saveStatus: false
     }
     photoList.value.push(photoObj)
@@ -174,8 +225,9 @@
 
   const submitForm = async() => {
     try {
-      User.stringFormat()
+      User.capitalize()
       await User.save()
+      console.debug('fetch 3')
       UIConfirm()
       redirect()
     } catch(err) {
@@ -183,34 +235,67 @@
     }
   }
 
-  const getExistingPhotos = () => {
-    const { user_name: userName } = User.current;
+  const stripBody = () => {
+    return photoList.value.filter(photo => {
+      return photo.saveStatus === false ||
+        (
+          photo.saveStatus === true &&
+          photo.deleteStatus === true
+        )
+    })
+      .map(photo => {
+        if (photo.deleteStatus)
+          delete photo.fileToBase64
+        return photo
+      })
+  }
 
-    return new Promise((resolve, reject) => {
-      const url = `http://${ URL }:${ PORT }/users/${ userName }/photos`
-      return fetch(url)
-        .then(resp => {
-          if (!resp.ok)
-            return reject(`Error: calling backoffice service failed with status code ${ resp.status }`);
-          return resp.json()
-        })
-        .then(list => {
-          return list.forEach(photo => {
-            photo.id = getUuid()
-            photoList.value.push(photo)
-          })
-        })
-    });
+  const getExistingPhotos = () => {
+
+    const url = getHttpServiceUrl()
+
+    return fetch(url)
+      .then(resp => {
+        if (!resp.ok)
+          return Promise.reject(new GetExistingPhotosError(`Error: calling backoffice HTTP service failed with status code ${ resp.status }`))
+        return resp.json()
+      })
+      .then(list => concatToPhotoList(list))
+      .catch(err => UIAlert(err))
   };
+
+  const getHttpServiceUrl = () => {
+    const userName = User.getSlug()
+    return `http://${ URL }:${ PORT }/users/${ userName }/photos`
+  }
+
+  const concatToPhotoList = list => {
+    if (!list?.length)
+      return []
+    return list.forEach(photo => {
+      photo.id = getPhotoId(photo.fileName)
+      photoList.value.push(photo)
+    })
+  }
+
+  const toPhotoList = list => {
+    if (!list?.length)
+      return []
+    photoList.value = []
+    return list.forEach(photo => {
+      photo.id = getPhotoId(photo.fileName)
+      photoList.value.push(photo)
+    })
+  }
 
   onMounted(() => {
 
-    document.body.addEventListener('keydown', e => {
+    document.body.addEventListener('keydown', async(e) => {
       if (
         e.key !== 'Escape' ||
-        isActive.value === false
+        backdropIsActive.value === false
       ) return
-      backdropClose()
+      await userMessageFadeOut()
     })
 
     getExistingPhotos();
@@ -224,7 +309,7 @@
 
     e.preventDefault()
     const pictureId = e.target.id;
-    isActive.value = true
+    backdropIsActive.value = true
     stripShowing.value = true
     backdropColor.value = 'blue'
 
@@ -242,7 +327,7 @@
   }
 
   const deleteConfirmed = () => {
-    isActive.value = false
+    backdropIsActive.value = false
     promptShowing.value = false
     photoList.value
       .find(image => image.id === imageToDelete.value)
@@ -382,7 +467,7 @@
               Prendre une photo
             </button> 
 
-            <button id="savebutton" ref="savebutton" type="button" class="latelier-form-input latelier-form-submit mt-6 mb-4">
+            <button id="savebutton" ref="savebutton" type="button" class="latelier-form-input latelier-form-submit mt-6 mb-4" @click="submitForm">
               Enregistrer
             </button>
 
@@ -392,25 +477,27 @@
 
       </v-container>
 
-      <div id="confirmation-holder" :class=" isActive === true ? 'fadein' : 'fadeout' ">
+      <div id="confirmation-holder" :class=" backdropIsActive === true ? 'fadein' : 'fadeout' ">
 
-        <div id="backdrop-el" :class="[ backdropColor, backdropHigher === true ? 'backdrop-higher' : '' ]" @click="backdropClose">></div>
+        <div id="backdrop-el" :class="[ backdropColor  ]" @click="userMessageFadeOut">></div>
 
-        <div id="messagebox-el" :class=" promptShowing === true ? 'showing' : '' ">
+        <div id="messagebox-el" :class=" messageElShowing === true ? 'showing' : '' ">
 
-          {{ userMessage }}
+          <span>{{ userMessage }}</span>
 
-          <div id="prompt">
-
+          <div id="prompt" :class=" promptShowing === true ? 'showing' : '' ">
             <button @click="deleteConfirmed">Oui</button>
-            <button @click="backdropClose">Non</button>
+            <button @click="userMessageFadeOut">Non</button>
+          </div>
 
+          <div id="alert-confirm" :class=" alertConfirmShowing === true ? 'showing' : '' ">
+            <button @click="userMessageFadeOut">Ok</button>
           </div>
 
         </div>
 
 
-        <button id="backdrop-close" title="Fermer" class="mdi mdi-close" @click="backdropClose"></button>
+        <button id="backdrop-close" title="Fermer" class="mdi mdi-close" @click="userMessageFadeOut"></button>
 
         <div id="picture-strip-holder" :class=" stripShowing === true ? 'showing' : '' ">
 
@@ -712,10 +799,6 @@
     opacity: .8;
   }
 
-  .backdrop-higher {
-    z-index: 1500;
-  }
-
   #messagebox-el {
     display: none;
   }
@@ -724,16 +807,33 @@
     display: block;
   }
 
-  #prompt {
+  #messagebox-el > span {
+    text-align: center;
+    width: 90%;
+    margin: 0 auto;
+    display: none;
+  }
+
+  #messagebox-el.showing > span {
+    display: block;
+  }
+
+  #prompt,
+  #alert-confirm {
+    display: none;
     width: 450px;
-    display: flex;
-    flex-direction: row;
     margin: 0 auto;
     margin-top: 25px;
   }
 
+  #prompt.showing,
+  #alert-confirm.showing {
+    display: flex;
+    flex-direction: row;
+  }
 
-  #prompt > button {
+  #prompt > button,
+  #alert-confirm > button {
     display: block;
     width: 200px;
     height: 100px;
@@ -743,6 +843,7 @@
     position: relative;
     z-index: 1550;
     opacity: .8;
+    margin: 0 auto;
   }
 
   #prompt > button:hover {

@@ -17,6 +17,7 @@ const server = fastify({
     pluginTimeout: 3000
 })
 
+server.register(require('@fastify/sensible'))
 
 // Register your application
 // as a normal plugin.

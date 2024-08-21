@@ -159,7 +159,7 @@
 
       </v-container>
 
-      <RouterLink class="user-add-holder" :to="'/user/photo/add/' + userId">
+      <RouterLink class="user-add-holder" :to="`/users/${ userId }/photo/add/`">
         <button class="mdi mdi-camera-plus user-add"></button>
       </RouterLink>
 

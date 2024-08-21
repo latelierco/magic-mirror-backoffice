@@ -5,7 +5,11 @@ const path = require('node:path')
 const AutoLoad = require('@fastify/autoload')
 const getLogger = require('./common/log')
 const cors = require('@fastify/cors')
-
+const {
+  httpErrors: {
+    createError
+  }
+} = require('@fastify/sensible')
 
 // Pass --options via CLI arguments in command to enable these options.
 const options = {}
@@ -18,7 +22,7 @@ module.exports = async function (fastify, opts) {
   // CORS
   await fastify.register(cors, {
       origin: '*',
-      methods: ['GET'],
+      methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
       allowedHeaders: ['Accept', 'Content-Type', 'Authorization']
   });
 
@@ -39,23 +43,26 @@ module.exports = async function (fastify, opts) {
     options: Object.assign({}, opts)
   })
 
+  fastify.setNotFoundHandler(async(err, request, reply) => {
+    throw createError(404, 'Resource Not Found')
+  })
+
   fastify.setErrorHandler(async(err, request, reply) => {
 
-        log.error(err)
+    const replyError = err?.cause &&
+      !isNaN(err.cause) &&
+      createError(err.cause) || err
 
-        const {
-            statusCode = 500,
-            message = 'Service Unavailable'
-        } = err
+    const {
+      statusCode: status = 500,
+      message = 'Service Unavailable'
+    } = replyError
 
-        reply.status(statusCode)
+    log.error(err)
+    log.error(replyError)
 
-        if (err instanceof _E_.STANDARD) {
-            const { out = 'Service Unavailable' } = err
-            return { statusCode, message }
-        }
-
-        return { statusCode, message }
+    reply.status(status)
+    return { status, message }
   })
 }
 
