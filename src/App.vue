@@ -1,3 +1,8 @@
+<script setup>
+  //
+</script>
+
+
 <template>
   <v-app>
     <v-main>
@@ -6,9 +11,6 @@
   </v-app>
 </template>
 
-<script setup>
-  //
-</script>
 
 <style>
 

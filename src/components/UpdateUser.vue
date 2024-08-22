@@ -129,27 +129,27 @@
             <h2 class="h2-main">Adresse de Résidence</h2>
             <v-divider class="h2-hr-main"></v-divider>
 
-            <label for="address">Adresse <span class="sub">( numéro, type et nom de la voie )</span></label>
-            <input type="text" class="latelier-form-input mt-2 mb-4" id="address" placeholder="Adresse" v-model="User.current.location_home.address"/>
+            <label for="home_address">Adresse <span class="sub">( numéro, type et nom de la voie )</span></label>
+            <input type="text" class="latelier-form-input mt-2 mb-4" id="home_address" placeholder="Adresse" v-model="User.current.location_home.address"/>
 
-            <label for="zip_code">Code Postal</label>
-            <input type="text" class="latelier-form-input mt-2 mb-4" id="zip_code" placeholder="Code Postal" v-model="User.current.location_home.zip_code"/>
+            <label for="home_zip_code">Code Postal</label>
+            <input type="text" class="latelier-form-input mt-2 mb-4" id="home_zip_code" placeholder="Code Postal" v-model="User.current.location_home.zip_code"/>
 
-            <label for="city">Ville ou Localité</label>
-            <input type="text" class="latelier-form-input mt-2 mb-4" id="city" placeholder="Ville" v-model="User.current.location_home.city"/>
+            <label for="home_city">Ville ou Localité</label>
+            <input type="text" class="latelier-form-input mt-2 mb-4" id="home_city" placeholder="Ville" v-model="User.current.location_home.city"/>
 
 
             <h2 class="h2-main">Adresse du Lieu de Travail</h2>
             <v-divider class="h2-hr-main"></v-divider>
 
-            <label for="address">Adresse <span class="sub">( numéro, type et nom de la voie )</span></label>
-            <input type="text" class="latelier-form-input mt-2 mb-4" id="address" placeholder="Adresse" v-model="User.current.location_work.address" />
+            <label for="work_address">Adresse <span class="sub">( numéro, type et nom de la voie )</span></label>
+            <input type="text" class="latelier-form-input mt-2 mb-4" id="work_address" placeholder="Adresse" v-model="User.current.location_work.address" />
 
-            <label for="zip_code">Code Postal</label>
-            <input type="text" class="latelier-form-input mt-2 mb-4" id="zip_code" placeholder="Code Postal" v-model="User.current.location_work.zip_code" />
+            <label for="work_zip_code">Code Postal</label>
+            <input type="text" class="latelier-form-input mt-2 mb-4" id="work_zip_code" placeholder="Code Postal" v-model="User.current.location_work.zip_code" />
 
-            <label for="city">Ville ou Localité</label>
-            <input type="text" class="latelier-form-input mt-2 mb-4" id="city" placeholder="Ville" v-model="User.current.location_work.city" />
+            <label for="work_city">Ville ou Localité</label>
+            <input type="text" class="latelier-form-input mt-2 mb-4" id="work_city" placeholder="Ville" v-model="User.current.location_work.city" />
 
             <v-divider class="h2-hr-main"></v-divider>
 

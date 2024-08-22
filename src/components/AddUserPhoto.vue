@@ -1,11 +1,11 @@
 <script setup>
 
-  import { ref, watch, onMounted } from 'vue'
+  import { ref, watch, onMounted, onBeforeUnmount } from 'vue'
   import { useRoute, useRouter } from 'vue-router'
   import { doc, collection, getDoc, addDoc, getFirestore } from 'firebase/firestore';
   import config from '../config'
   import appUtils from '/src/assets/js/app-utils'
-  import photoCapture from '/src/assets/js/photo'
+
 
   import {
     AddUserPhotosError,
@@ -104,6 +104,14 @@
         .then(list => toPhotoList(list))
     }
   }
+
+  const streaming = ref(false)
+  const canvasInterval = ref(null)
+
+  const width = 640
+  // height will be computed based
+  // on the input stream
+  let height = 0
 
 
   const video = ref()
@@ -288,22 +296,84 @@
     })
   }
 
-  onMounted(() => {
 
-    document.body.addEventListener('keydown', async(e) => {
-      if (
-        e.key !== 'Escape' ||
-        backdropIsActive.value === false
-      ) return
-      await userMessageFadeOut()
-    })
+  /**
+   * Video Setup
+   */
 
-    getExistingPhotos();
+  const videoStartup = photoList => {
 
-    setTimeout(() => {
-      photoCapture.startup(photoList.value)
-    }, 250)
-  })
+    console.debug('/////////////////// starting up video')
+
+    webcamStart()
+    videoSetup()
+    videoToCanvas()
+  }
+
+  const webcamStart = () => {
+    navigator.mediaDevices
+      .getUserMedia({ video: true, audio: false })
+      .then((stream) => {
+        video.value.srcObject = stream
+        video.value.play()
+      })
+      .catch((err) => {
+        console.error(Error('[ERROR] camera device caused an error', { cause: err }))
+      })
+  }
+
+  const videoSetup = () => {
+    video.value.addEventListener(
+      'canplay',
+      e => {
+        canvasInterval.value = null
+        if (!streaming.value) {
+          height = video.value.videoHeight / (video.value.videoWidth / width)
+
+          // Firefox currently has a bug where
+          // the height can't be read from
+          // the video, so we will make
+          // assumptions if this happens.
+          if (isNaN(height))
+            height = width / (4 / 3)
+
+          video.value.setAttribute('width', width)
+          video.value.setAttribute('height', height)
+          canvas.value.setAttribute('width', width)
+          canvas.value.setAttribute('height', height)
+          streaming.value = true
+        }
+      },
+      false,
+    )
+  }
+
+/*
+
+AddUserPhoto.vue?t=1724313385354:370 Uncaught TypeError: Failed to execute 'drawImage' on 'CanvasRenderingContext2D': The provided value is not of type '(CSSImageValue or HTMLCanvasElement or HTMLImageElement or HTMLVideoElement or ImageBitmap or OffscreenCanvas or SVGImageElement or VideoFrame)'.
+    at AddUserPhoto.vue?t=1724313385354:370:17
+
+*/
+  const videoToCanvas = () => {
+    video.value.removeEventListener('play', videoDraw)
+    video.value.addEventListener('play', videoDraw)
+  }
+
+  const videoDraw = () => {
+    const context = canvas.value.getContext('2d')
+    clearInterval(canvasInterval.value)
+    canvasInterval.value = setInterval(() => {
+      if (!video.value) {
+        clearInterval(canvasInterval.value)
+        return
+      }
+      context && context.drawImage(video.value, 0, 0, width, height)
+    }, 1000 / 30)
+  }
+
+  /**
+   * 
+   */
 
   const zoom = e => {
 
@@ -394,6 +464,27 @@
     )
   }
 
+  onMounted(() => {
+
+    document.body.addEventListener('keydown', async(e) => {
+      if (
+        e.key !== 'Escape' ||
+        backdropIsActive.value === false
+      ) return
+      await userMessageFadeOut()
+    })
+
+    getExistingPhotos();
+
+    setTimeout(() => {
+      videoStartup(photoList.value)
+    }, 250)
+  })
+
+  onBeforeUnmount(() => {
+    video.value.removeEventListener('play', videoDraw)
+    clearInterval(canvasInterval.value)
+  })
 
 </script>
 
