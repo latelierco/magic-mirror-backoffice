@@ -10,7 +10,8 @@
     "test": "node --test test/**/*.test.js",
     "start": "fastify start -l info app.js",
     "dev": "fastify start -w -l info -P app.js",
-    "start:dev": "NODE_ENV=dev nodemon server.js"
+    "start:dev": "NODE_ENV=dev nodemon server.js",
+    "encode": "python3 ../../tools/encode.py -i ../../dataset -e ../../model/encodings.pickle"
   },
   "keywords": [],
   "author": "",
@@ -24,7 +25,8 @@
     "fastify-plugin": "^4.0.0",
     "log4js": "^6.9.1",
     "mime": "^4.0.4",
-    "mime-types": "^2.1.35"
+    "mime-types": "^2.1.35",
+    "python-shell": "^5.0.0"
   },
   "devDependencies": {
     "nodemon": "^3.1.4"

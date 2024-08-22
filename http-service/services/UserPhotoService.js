@@ -11,6 +11,9 @@ const {
   unlink
 } = require('node:fs/promises')
 
+const { exec } = require('child_process');
+
+
 const mime = require('mime-types')
 const getLogger = require('../common/log')
 const log = getLogger('USER PHOTO SERVICE')
@@ -43,7 +46,8 @@ class UserPhotoService {
 
     await this.saveFilesToFileSystem(photoList, dirPath)
     await this.deleteSelectedUserPhotos(photoList, dirPath)
-    log.info('saving images to directory - OK')
+    await this.modelEncode()
+
     return await this.getDirectoryContent(userName)
   }
 
@@ -118,6 +122,7 @@ class UserPhotoService {
         return await writeFile(filePath, buf);
       });
     return Promise.all(ps)
+      .then(() => log.info('saving images to directory - OK'))
   }
 
 
@@ -129,7 +134,7 @@ class UserPhotoService {
   async deleteSelectedUserPhotos(photoList, dirPath) {
     const ps = photoList
       .filter(photo => photo.deleteStatus === true)
-      .map(async(photo, idx, arr) => {
+      .map(async(photo) => {
         const fileName = this.getFileName(photo)
         const filePath = this.getFilePath(dirPath, fileName)
         return await unlink(filePath);
@@ -138,6 +143,16 @@ class UserPhotoService {
     return Promise.all(ps)
   }
 
+  async modelEncode() {
+    return new Promise((resolve, reject) => {
+      const scriptProcess = exec('npm run encode')
+      scriptProcess.on('close', () => {
+        log.info('generating face recognition model - OK')
+        return resolve()
+      })
+      scriptProcess.on('error', err => reject(err))
+    })
+  }
 
   getFilePath(dirPath, file) {
     return `${ dirPath }/${ file }`;

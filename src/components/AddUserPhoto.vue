@@ -555,7 +555,7 @@
 
       <div id="confirmation-holder" :class=" backdropIsActive === true ? 'fadein' : 'fadeout' ">
 
-        <div id="backdrop-el" :class="[ backdropColor  ]" @click="userMessageFadeOut">></div>
+        <div id="backdrop-el" :class="[ backdropColor  ]" @click="userMessageFadeOut"></div>
 
         <div id="messagebox-el" :class=" messageElShowing === true ? 'showing' : '' ">
 
