@@ -25,7 +25,8 @@
   const route = useRoute()
   const router = useRouter()
   const db = getFirestore()
-  const { id = null } = route.params;
+  const { id: userId = null } = route.params;
+
   const {
     VIDEO_VIEWPORT : {
       WIDTH
@@ -81,10 +82,7 @@
     getSlug: () => slugify(User.current.name_first),
     capitalize: () => obectFormatstrings(User.current),
     save: () => {
-
-      console.debug('fetch 1')
       const errMessage = 'Error: calling backoffice HTTP service failed with status code'
-
       const url = getHttpServiceUrl()
       const body = stripBody()
 
@@ -96,7 +94,6 @@
         body: JSON.stringify(body)
       })
         .then(resp => {
-          console.debug('fetch 2')
           if (!resp.ok)
             return Promise.reject(new SaveUserPhotosError(`${ errMessage } ${ resp.status }`))
           return resp.json()
@@ -105,31 +102,26 @@
     }
   }
 
-  const streaming = ref(false)
-  const canvasInterval = ref(null)
+  let streaming = false
+  let canvasInterval = null
 
   const width = 640
-  // height will be computed based
-  // on the input stream
+  // height will be computed
+  // based on the input stream
   let height = 0
 
 
-  const video = ref()
-  const canvas = ref()
-  const photo = ref()
+  let video = null
+  let canvas = null
   const pictureIdx = ref()
   const photoList = ref([])
-
-  const userId = ref(id);
-  const userMessage = ref('')
-  const slug = ref('')
-
   const backdropIsActive = ref(false)
   const backdropColor = ref('blue')
   const hasFlash = ref(false)
   const featured = ref()
   const translateValue = ref()
   const stripShowing = ref(false)
+  const userMessage = ref('')
   const messageElShowing = ref(false)
   const alertConfirmShowing = ref(false)
   const promptShowing = ref(false)
@@ -137,9 +129,9 @@
   const imageToDelete = ref()
 
 
-  const docRef = doc(db, 'users', userId.value)
+  const docRef = doc(db, 'users', userId)
   const snap = await getDoc(docRef)
-  User.current = Object.assign({}, snap.data(), { id: userId.value })
+  User.current = Object.assign({}, snap.data(), { id: userId })
 
 
   const UIConfirm = async() => {
@@ -195,14 +187,14 @@
   }
 
   const redirect = () => {
-    setTimeout(() => router.push(`/users/${ userId.value }`), DELAY)
+    setTimeout(() => router.push(`/users/${ userId }`), DELAY)
   }
 
   const capturePhoto = e => {
 
     e.preventDefault()
     hasFlash.value = true;
-    video.value.pause()
+    video.pause()
     const data = getCaptureData()
 
     const photoObj = {
@@ -215,27 +207,26 @@
     photoList.value.push(photoObj)
 
     setTimeout(() => {
-      video.value.play()
+      video.play()
       hasFlash.value = false
     }, 1000)
   }
 
   const getCaptureData = () => {
     const height = getVideoHeight()
-    const context = canvas.value.getContext('2d')
-    context.drawImage(video.value, 0, 0, WIDTH, height)
-    return canvas.value.toDataURL('image/jpeg')
+    const context = canvas.getContext('2d')
+    context.drawImage(video, 0, 0, WIDTH, height)
+    return canvas.toDataURL('image/jpeg')
   }
 
   const getVideoHeight = () => {
-    return video.value.videoHeight
+    return video.videoHeight
   }
 
   const submitForm = async() => {
     try {
       User.capitalize()
       await User.save()
-      console.debug('fetch 3')
       UIConfirm()
       redirect()
     } catch(err) {
@@ -302,9 +293,6 @@
    */
 
   const videoStartup = photoList => {
-
-    console.debug('/////////////////// starting up video')
-
     webcamStart()
     videoSetup()
     videoToCanvas()
@@ -314,8 +302,8 @@
     navigator.mediaDevices
       .getUserMedia({ video: true, audio: false })
       .then((stream) => {
-        video.value.srcObject = stream
-        video.value.play()
+        video.srcObject = stream
+        video.play()
       })
       .catch((err) => {
         console.error(Error('[ERROR] camera device caused an error', { cause: err }))
@@ -323,12 +311,12 @@
   }
 
   const videoSetup = () => {
-    video.value.addEventListener(
+    video.addEventListener(
       'canplay',
       e => {
-        canvasInterval.value = null
-        if (!streaming.value) {
-          height = video.value.videoHeight / (video.value.videoWidth / width)
+        canvasInterval = null
+        if (!streaming) {
+          height = video.videoHeight / (video.videoWidth / width)
 
           // Firefox currently has a bug where
           // the height can't be read from
@@ -337,37 +325,31 @@
           if (isNaN(height))
             height = width / (4 / 3)
 
-          video.value.setAttribute('width', width)
-          video.value.setAttribute('height', height)
-          canvas.value.setAttribute('width', width)
-          canvas.value.setAttribute('height', height)
-          streaming.value = true
+          video.setAttribute('width', width)
+          video.setAttribute('height', height)
+          canvas.setAttribute('width', width)
+          canvas.setAttribute('height', height)
+          streaming = true
         }
       },
       false,
     )
   }
 
-/*
-
-AddUserPhoto.vue?t=1724313385354:370 Uncaught TypeError: Failed to execute 'drawImage' on 'CanvasRenderingContext2D': The provided value is not of type '(CSSImageValue or HTMLCanvasElement or HTMLImageElement or HTMLVideoElement or ImageBitmap or OffscreenCanvas or SVGImageElement or VideoFrame)'.
-    at AddUserPhoto.vue?t=1724313385354:370:17
-
-*/
   const videoToCanvas = () => {
-    video.value.removeEventListener('play', videoDraw)
-    video.value.addEventListener('play', videoDraw)
+    video.removeEventListener('play', videoDraw)
+    video.addEventListener('play', videoDraw)
   }
 
   const videoDraw = () => {
-    const context = canvas.value.getContext('2d')
-    clearInterval(canvasInterval.value)
-    canvasInterval.value = setInterval(() => {
-      if (!video.value) {
-        clearInterval(canvasInterval.value)
+    const context = canvas.getContext('2d')
+    clearInterval(canvasInterval)
+    canvasInterval = setInterval(() => {
+      if (!video) {
+        clearInterval(canvasInterval)
         return
       }
-      context && context.drawImage(video.value, 0, 0, width, height)
+      context && context.drawImage(video, 0, 0, width, height)
     }, 1000 / 30)
   }
 
@@ -466,6 +448,9 @@ AddUserPhoto.vue?t=1724313385354:370 Uncaught TypeError: Failed to execute 'draw
 
   onMounted(() => {
 
+    video = document.querySelector('video')
+    canvas = document.querySelector('canvas')
+
     document.body.addEventListener('keydown', async(e) => {
       if (
         e.key !== 'Escape' ||
@@ -482,8 +467,8 @@ AddUserPhoto.vue?t=1724313385354:370 Uncaught TypeError: Failed to execute 'draw
   })
 
   onBeforeUnmount(() => {
-    video.value.removeEventListener('play', videoDraw)
-    clearInterval(canvasInterval.value)
+    video.removeEventListener('play', videoDraw)
+    clearInterval(canvasInterval)
   })
 
 </script>
