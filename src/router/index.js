@@ -51,6 +51,13 @@ const router = createRouter({
       component: () => import('../pages/user-photo-add.vue')
     },
     // 
+    {
+      path: '/content-list',
+      name: 'ContentList',
+      props: true,
+      component: () => import('../pages/content-list.vue')
+    },
+    // 
     // {
     //   path: '/about',
     //   name: 'about',

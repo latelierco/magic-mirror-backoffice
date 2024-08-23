@@ -1,17 +1,20 @@
 <script setup>
+
   import { ref, inject, onMounted } from 'vue'
 
-  import {
-    doc,
+  const {
     collection,
-    query,
-    where,
-    onSnapshot,
-    getFirestore
-  } from 'firebase/firestore';
+    deleteDoc,
+    doc,
+    getFirestore,
+    getDocs,
+    query
+  } = inject('firestore')
+
+  const db = getFirestore()
+
 
   import config from '../config'
-
 
   const confirmation = ref({
     fr: 'Les utilisateurs ont bien été supprimés',
@@ -25,19 +28,38 @@
 
 
   const { DELAY } = config
-  const users = ref()
-
-  const userMessage = ref('')
+  const users = ref([])
   const editUsers = ref([])
+  const userMessage = ref('')
   const isActive = ref(false)
   const backdropColor = ref('blue')
 
-  const iterateDelete = async(users) => {
-    const ps = users.value.map(async(user) => {
-      console.debug('user', user)
-      return await deleteDoc(doc(db, 'users', user));
+
+  const populate = async() => {
+    const userQuery = query(collection(db, 'users'))
+    const snap = await getDocs(userQuery)
+    snap.forEach(doc => {
+      const userId = doc.id
+      users.value.push(Object.assign({}, { id: userId }, doc.data()))
     })
-    setTimeout(() => Promise.all(ps), DELAY)
+  }
+
+  const iterateDelete = async() => {
+
+    const ps = editUsers.value.map(async(userId) => {
+      try {
+        await deleteDoc(doc(db, 'users', userId))
+        const userToDeleteIndex = users.value.findIndex(user => user.id === userId)
+        users.value.splice(userToDeleteIndex, 1)
+      } catch(err) {
+        console.error(err)
+      }
+    })
+
+    setTimeout(() => {
+      return Promise.all(ps)
+        .then(() => editUsers.value = [])
+    }, DELAY)
   }
 
   const UIConfirm = () => {
@@ -72,35 +94,17 @@
 
   const suppressAction = async() => {
     try {
-      await iterateDelete(editUsers)
-      editUsers.value = [];
+      await iterateDelete()
       UIConfirm()
     } catch(err) {
       UIAlert(err)
     }
   }
 
-  const populate = (fbQuery) => {
-    return new Promise((resolve, reject) => {
-      const usersList = []
-      const unsubscribe = onSnapshot(fbQuery, snap => {
-        snap.forEach(userDoc => {
-          const userId = userDoc.id
-          const userData  = userDoc.data()
-          const user = Object.assign({}, { id: userId }, userData)
-          usersList.push(user)
-        })
-        return resolve(usersList)
-      })      
-    })
-  }
+
+  onMounted(async() => await populate())
 
 
-  const { getFirestoreDb } = inject('firebase')
-  const db = getFirestoreDb()
-  const fbQuery = query(collection(db, 'users'))
-
-  onMounted(async() => users.value = await populate(fbQuery))
 
 </script>
 

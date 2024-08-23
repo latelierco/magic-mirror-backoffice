@@ -6,14 +6,13 @@
   import appUtils from '/src/assets/js/app-utils'
 
   const {
-    firestore: {
-      collection,
-      addDoc
-    },
-    getFirestoreDb
-  } = inject('firebase')
+    addDoc,
+    collection,
+    getFirestore
+  } = inject('firestore')
 
-  const db = getFirestoreDb()
+  const db = getFirestore()
+
 
   const {
     obectFormatstrings,
@@ -126,7 +125,11 @@
 
     <v-main>
 
-      <v-container class="py-8 px-6" fluid >
+      <v-container class="py-8 px-6 form-container" fluid >
+
+          <RouterLink class="page-back" title="Retour" :to="'/users'">
+            <button class="mdi mdi-arrow-left-bold"></button>
+          </RouterLink>
 
           <form>
 

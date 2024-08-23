@@ -3,9 +3,6 @@ import { provide } from "vue";
 import { initializeApp } from 'firebase/app'
 import * as firestore from 'firebase/firestore'
 
-const { getFirestore } = firestore
-
-
 // ... other firebase imports
 
 const firebaseApp = initializeApp({
@@ -18,17 +15,12 @@ const firebaseApp = initializeApp({
   measurementId: 'G-X34HXJ0LQ2'
 })
 
-const db = getFirestore(initializeApp)
-
 
 export default {
 
   install: (app, options) => {
 
     const getFirestoreDb = () => db
-    app.provide('firebase', {
-      getFirestoreDb,
-      firestore
-    });
+    app.provide('firestore', firestore);
   },
 };

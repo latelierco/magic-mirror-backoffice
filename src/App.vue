@@ -173,6 +173,11 @@
   }
 
 
+  .form-container {
+    flex-direction: row;
+  }
+
+
   form {
     margin-left: 150px;
     display: flex;
@@ -245,6 +250,7 @@
   }
 
   .user-add-holder {
+    opacity: .4;
     position: fixed;
     right: 80px;
     bottom: 80px;
@@ -253,18 +259,13 @@
     border: 4px solid #fff;
     box-sizing: border-box;
     border-radius: 27px;
-    opacity: .4;
     color: #fff;
     background-color: #06326C;
   }
 
 
-  .user-add-holder:hover {
-    opacity: .8;
-  }
-
-  .user-add {
-    position: absolute;
+  .user-add,
+  .page-back {
     font-size: 33px;
     width: 42px;
     height: 42px;
@@ -272,5 +273,32 @@
     top: -2px;
     left: 1px;
   }
+
+
+  .user-add-holder:hover {
+    opacity: .8;
+  }
+
+
+  .user-add {
+    position: absolute;
+  }
+
+
+  .page-back {
+    color: #fff;
+    font-size: 36px;
+    opacity: .4;
+    position: relative;
+    padding: 10px;
+    cursor: pointer;
+  }
+
+
+  .page-back:hover {
+    opacity: .8;
+  }
+
+
 
 </style>

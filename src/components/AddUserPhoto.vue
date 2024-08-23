@@ -6,14 +6,12 @@
   import appUtils from '/src/assets/js/app-utils'
 
   const {
-    firestore: {
-      doc,
-      collection,
-      getDoc,
-      addDoc
-    },
-    getFirestoreDb
-  } = inject('firebase')
+    addDoc,
+    collection,
+    doc,
+    getDoc,
+    getFirestore
+  } = inject('firestore')
 
 
   import {
@@ -33,7 +31,8 @@
 
   const route = useRoute()
   const router = useRouter()
-  const db = getFirestoreDb()
+  const db = getFirestore()
+
   const { id: userId = null } = route.params;
 
   const {
@@ -520,7 +519,11 @@
 
     <v-main>
 
-      <v-container class="py-8 px-6" fluid >
+      <v-container class="py-8 px-6 form-container" fluid >
+
+          <RouterLink class="page-back" title="Retour" :to="'/users'">
+            <button class="mdi mdi-arrow-left-bold"></button>
+          </RouterLink>
 
           <form>
 
