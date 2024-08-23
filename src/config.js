@@ -6,7 +6,8 @@ const config = {
 	HTTP_SERVICE: {
 		URL: '127.0.0.1',
 		PORT: 7000
-	}
+	},
+	USER_GROUP: 'latelier-co'
 }
 
 export default config

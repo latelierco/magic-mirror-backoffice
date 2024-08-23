@@ -1,12 +1,17 @@
 <script setup>
+  import { ref, inject, onMounted } from 'vue'
 
-  import { ref } from 'vue'
-  import { useFirestore, useCollection } from 'vuefire'
-  import { doc , collection, deleteDoc } from 'firebase/firestore'
+  import {
+    doc,
+    collection,
+    query,
+    where,
+    onSnapshot,
+    getFirestore
+  } from 'firebase/firestore';
 
-  const db = useFirestore()
-  const users = useCollection(collection(db, 'users'))
-  const DELAY = 1500
+  import config from '../config'
+
 
   const confirmation = ref({
     fr: 'Les utilisateurs ont bien été supprimés',
@@ -17,6 +22,10 @@
     fr: 'Une erreur est survenue lors de la suppression des utilisateurs sélectionnés',
     eng: 'Deleting selected users caused an error',
   })
+
+
+  const { DELAY } = config
+  const users = ref()
 
   const userMessage = ref('')
   const editUsers = ref([])
@@ -70,6 +79,28 @@
       UIAlert(err)
     }
   }
+
+  const populate = (fbQuery) => {
+    return new Promise((resolve, reject) => {
+      const usersList = []
+      const unsubscribe = onSnapshot(fbQuery, snap => {
+        snap.forEach(userDoc => {
+          const userId = userDoc.id
+          const userData  = userDoc.data()
+          const user = Object.assign({}, { id: userId }, userData)
+          usersList.push(user)
+        })
+        return resolve(usersList)
+      })      
+    })
+  }
+
+
+  const { getFirestoreDb } = inject('firebase')
+  const db = getFirestoreDb()
+  const fbQuery = query(collection(db, 'users'))
+
+  onMounted(async() => users.value = await populate(fbQuery))
 
 </script>
 

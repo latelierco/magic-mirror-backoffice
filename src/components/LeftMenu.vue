@@ -36,7 +36,7 @@
       links: [
         ['mdi-account', 'Utilisateurs', '/users'],
         ['mdi-account-edit', 'Contenu Personnalisé', '/users'],
-        ['mdi-pencil', 'Contenu', '/users']
+        ['mdi-pencil', 'Contenu', '/content']
       ],
     })
   }

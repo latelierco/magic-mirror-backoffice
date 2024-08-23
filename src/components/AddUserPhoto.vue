@@ -1,10 +1,19 @@
 <script setup>
 
-  import { ref, watch, onMounted, onBeforeUnmount } from 'vue'
+  import { ref, inject, onMounted, onBeforeUnmount } from 'vue'
   import { useRoute, useRouter } from 'vue-router'
-  import { doc, collection, getDoc, addDoc, getFirestore } from 'firebase/firestore';
   import config from '../config'
   import appUtils from '/src/assets/js/app-utils'
+
+  const {
+    firestore: {
+      doc,
+      collection,
+      getDoc,
+      addDoc
+    },
+    getFirestoreDb
+  } = inject('firebase')
 
 
   import {
@@ -24,7 +33,7 @@
 
   const route = useRoute()
   const router = useRouter()
-  const db = getFirestore()
+  const db = getFirestoreDb()
   const { id: userId = null } = route.params;
 
   const {

@@ -1,20 +1,27 @@
 <script setup>
 
-  import { ref } from 'vue'
+  import { ref, inject } from 'vue'
   import { useRouter } from 'vue-router'
-  import { collection, addDoc, getFirestore } from 'firebase/firestore';
   import config from '../config'
   import appUtils from '/src/assets/js/app-utils'
+
+  const {
+    firestore: {
+      collection,
+      addDoc
+    },
+    getFirestoreDb
+  } = inject('firebase')
+
+  const db = getFirestoreDb()
 
   const {
     obectFormatstrings,
     extractErrContent
   } = appUtils
 
-
   const router = useRouter()
-  const db = getFirestore()
-  const { DELAY } = config
+  const { DELAY, USER_GROUP } = config
 
   const confirmation = ref({
     fr: 'L\'utilisateur a bien été créé',
