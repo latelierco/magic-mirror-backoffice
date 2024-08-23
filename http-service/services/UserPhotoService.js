@@ -1,7 +1,8 @@
 'use strict'
 
+const crypto = require('node:crypto')
 const path = require('node:path')
-const crypto = require('crypto')
+const { exec } = require('node:child_process');
 const {
   readdir,
   stat,
@@ -11,23 +12,24 @@ const {
   unlink
 } = require('node:fs/promises')
 
-const { exec } = require('child_process');
-
 
 const mime = require('mime-types')
 const getLogger = require('../common/log')
 const log = getLogger('USER PHOTO SERVICE')
 
 
+
 class UserPhotoService {
 
 
   async getDirectoryContent(userName) {
+
     if (!this.isValidUserName())
       throw Error('Error: user name is not valid', { cause: 400 })
     const dirPath = this.getDirectoryPath(userName)
-    if (await this.directoryExists(dirPath) === false) {
-      await this.createDirectory(dirPath)
+
+    if (await this.directoryExists(dirPath, userName) === false) {
+      await this.createDirectory(dirPath, userName)
       return []
     }
     log.info('getting image directory content - OK')
@@ -41,8 +43,8 @@ class UserPhotoService {
 
     const dirPath = this.getDirectoryPath(userName)
 
-    if (await this.directoryExists(dirPath) === false)
-      await this.createDirectory(dirPath)
+    if (await this.directoryExists(dirPath, userName) === false)
+      await this.createDirectory(dirPath, userName)
 
     await this.saveFilesToFileSystem(photoList, dirPath)
     await this.deleteSelectedUserPhotos(photoList, dirPath)
@@ -64,14 +66,25 @@ class UserPhotoService {
   }
 
 
-  async directoryExists(dirPath) {
-    const stats = await stat(dirPath)
-    return stats.isDirectory()
+  async directoryExists(dirPath, userName) {
+    try {
+      const stats = await stat(dirPath)
+      log.info(`directory exists - OK - ${ userName }`)
+      return stats.isDirectory()
+    } catch(err) {
+      log.warn(`Warning: directory does not exist: ${ dirPath }`)
+      return false
+    }
   }
 
 
-  async createDirectory(dirPath) {
-    return await mkdir(dirPath)
+  async createDirectory(dirPath, userName) {
+    try {
+      await mkdir(dirPath)
+      return void log.info(`created directory - OK - ${ userName }`)
+    } catch(err) {
+      throw new Error(`could not create directory - ${ userName }`, { cause:err })
+    }
   }
 
 

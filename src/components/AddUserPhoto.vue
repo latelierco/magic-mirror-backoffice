@@ -39,6 +39,11 @@
   } = config
 
 
+  const suspendMesssage = ref({
+    fr: 'Génération du modèle, merci de bien vouloir patienter ..',
+    eng: 'Generating model.',
+  })
+
   const confirmation = ref({
     fr: 'Les images de l\'utilisateur ont bien été enregistrées',
     eng: 'User pictures have been saved successfully',
@@ -122,6 +127,7 @@
   const translateValue = ref()
   const stripShowing = ref(false)
   const userMessage = ref('')
+  const suspendMessage = ref(false)
   const messageElShowing = ref(false)
   const alertConfirmShowing = ref(false)
   const promptShowing = ref(false)
@@ -134,9 +140,18 @@
   User.current = Object.assign({}, snap.data(), { id: userId })
 
 
+  const UISuspend = () => {
+    backdropColor.value = 'blue'
+    const { fr, eng } = suspendMesssage.value
+    suspendMessage.value = true
+    assignUserMessage(fr)
+    console.info(`[INFO] ${ eng }`)
+  }
+
   const UIConfirm = async() => {
     backdropColor.value = 'blue'
     const { fr, eng } = confirmation.value
+    suspendMessage.value = false
     assignUserMessage(fr)
     console.info(`[INFO] ${ eng }`)
     await userMessageFadeOut()
@@ -149,6 +164,7 @@
     const { fr, eng } = errMessage?.value?.[errName] ||
       errMessage.value['AddUserPhotosError']
 
+    suspendMessage.value = false
     assignUserMessage(fr)
     alertConfirmShowing.value = true
 
@@ -159,6 +175,7 @@
   const UIWarning = async() => {
     backdropColor.value = 'red'
     const { fr } = warningMessage.value
+    suspendMessage.value = false
     assignUserMessage(fr)
     backdropZIndexHigher.value = true
   }
@@ -174,6 +191,8 @@
   }
 
   const userMessageFadeOut = (delay = null) => {
+    if (suspendMessage.value === true)
+      return
     return new Promise(resolve => {
       return setTimeout(() => {
         stripShowing.value = false
@@ -182,7 +201,7 @@
         messageElShowing.value = false
         backdropIsActive.value = false
         return resolve()
-      }, !!delay && delay || DELAY)      
+      }, !!delay && delay || DELAY)
     })
   }
 
@@ -226,13 +245,19 @@
   const submitForm = async() => {
     try {
       User.capitalize()
+      UISuspend()
       await User.save()
-      UIConfirm()
-      redirect()
+      userMessage.value = ''
+      suspendMessage.value = false
+      await userMessageFadeOut(DELAY / 10)
+      setTimeout(() => {
+        UIConfirm()
+        redirect()        
+      }, 500)
     } catch(err) {
       UIAlert(err)
     }
-  }
+  } 
 
   const stripBody = () => {
     return photoList.value.filter(photo => {
@@ -559,7 +584,9 @@
 
         <div id="messagebox-el" :class=" messageElShowing === true ? 'showing' : '' ">
 
-          <span>{{ userMessage }}</span>
+
+          <span v-if=" suspendMessage === true " class="suspend-message">{{ userMessage }} <div class="loader"></div></span>
+          <span v-else>{{ userMessage }}</span>
 
           <div id="prompt" :class=" promptShowing === true ? 'showing' : '' ">
             <button @click="deleteConfirmed">Oui</button>
@@ -643,7 +670,7 @@
 </template>
 
 
-<style>
+<style scped>
 
   form {
     display: flex;
@@ -894,6 +921,11 @@
     display: block;
   }
 
+  #messagebox-el.showing > span.suspend-message {
+    display: inline-block;
+    width: 80%;
+  }
+
   #prompt,
   #alert-confirm {
     display: none;
@@ -930,5 +962,27 @@
     margin-left: 50px;
   }
 
+  /* ref. : https://css-loaders.com/bars */
+  /* HTML: <div class="loader"></div> */
+  .loader {
+    margin-left: 20px;
+    display: inline-block;
+    width: 45px;
+    aspect-ratio: 1;
+    --c: no-repeat linear-gradient(#00EC7B calc(50% - 10px),#0000 0 calc(50% + 10px),#00EC7B 0);
+    background: 
+      var(--c) 0%   100%,
+      var(--c) 50%  100%,
+      var(--c) 100% 100%;
+    background-size: 20% calc(200% + 20px);
+    animation:l4 1s infinite linear;
+  }
+
+  @keyframes l4 {
+      33%  {background-position: 0% 50%,50% 100%,100% 100%}
+      50%  {background-position: 0%  0%,50%  50%,100% 100%}
+      66%  {background-position: 0%  0%,50%   0%,100%  50%}
+      100% {background-position: 0%  0%,50%   0%,100%   0%}
+  }
 
 </style>

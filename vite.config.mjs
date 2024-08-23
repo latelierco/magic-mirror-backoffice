@@ -52,3 +52,5 @@ export default defineConfig({
     port: 3000,
   },
 })
+
+/******** a shameful man hunt for my impure blood *********/
