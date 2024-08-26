@@ -2,7 +2,7 @@
   "name": "mirror-admin-vuetify",
   "version": "0.0.0",
   "scripts": {
-    "dev": "vite",
+    "start:dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
     "lint": "eslint . --fix --ignore-path .gitignore"
