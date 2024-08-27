@@ -125,7 +125,6 @@
 
   let video = null
   let canvas = null
-  const pictureIdx = ref()
   const photoList = ref([])
   const stripList = ref([])
   const backdropIsActive = ref(false)
@@ -147,7 +146,6 @@
   const docRef = doc(db, 'users', userId)
   const snap = await getDoc(docRef)
   User.current = Object.assign({}, snap.data(), { id: userId })
-
 
   const UISuspend = () => {
     backdropColor.value = 'blue'
@@ -407,29 +405,27 @@
 
     e.preventDefault()
 
-    const pictureId = getEventElementId(e)
     backdropIsActive.value = true
     stripShowing.value = true
     backdropColor.value = 'blue'
 
-    stripList.value = getStripList()
+    const element = getEventElement(e)
+    featured.value = getPhotoIndex(element)
 
-    pictureIdx.value = getPictureIndex(pictureId)
-    featured.value = pictureIdx.value
-    translateValue.value = getTranslateValue(pictureIdx.value)
+    stripList.value = getStripList()
+    translateValue.value = getTranslateValue(featured.value)
   }
 
   const deletePicture = e => {
 
     e.preventDefault()
 
-    const pictureId = getEventElementId(e)
     const element = getEventElement(e)
     const photoIndex = getPhotoIndex(element)
 
     promptMode.value = getPromptMode(element)
 
-    imageToDelete.value = pictureId
+    imageToDelete.value = element.id
     UIWarning()
     promptShowing.value = true
   }
@@ -460,7 +456,8 @@
   }
 
   const getPhotoIndex = el => {
-    return el?.getAttribute('array-position')
+    const idx = el?.getAttribute('array-position')
+    return parseInt(idx, 10)
   }
 
   const isPhotoStripsLast = () => {
@@ -469,7 +466,8 @@
 
   const nextPicture = e => {
     e.preventDefault()
-    const elementId = getEventElementId(e)
+    const element = getEventElement(e)
+    const elementId = getPhotoIndex(element)
     const next = getNext(elementId)
     featured.value = next
     translateValue.value = getTranslateValue(next)
@@ -486,7 +484,8 @@
   const previonsPicture = e => {
     e.preventDefault()
     const min = 0
-    const elementId = getEventElementId(e)
+    const element = getEventElement(e)
+    const elementId = getPhotoIndex(element)
     const prev = getPrev(elementId)
     featured.value = prev
     translateValue.value = getTranslateValue(prev)
@@ -500,16 +499,8 @@
     return prev
   }
 
-  const getPictureIndex = pictureId => {
-    return stripList
-      .value
-      .findIndex(
-        picture => picture.id === pictureId
-      )
-  }
-
-  const getTranslateValue = pictureIdx => {
-    return pictureIdx * (640 + 120) * -1
+  const getTranslateValue = featuredIdx => {
+    return featuredIdx * (640 + 120) * -1
   }
 
   const getParentNodeImageElement = element => {
@@ -531,11 +522,6 @@
 
   const getEventElement = e => {
     return e.target
-  }
-
-  const getEventElementId = e => {
-    const element = getEventElement(e)
-    return element.id
   }
 
   onMounted(() => {
@@ -605,7 +591,7 @@
 
                 <div id="photo-list">
 
-                  <template v-for="picture in photoList" :key="picture.id">
+                  <template v-for="(picture, index) in photoList" :key="picture.id">
 
                     <div class="picture-item" :class=" picture.deleteStatus === false ? 'showing' : '' " >
 
@@ -613,8 +599,8 @@
                         <img ref="picture.id" class="user-thumbnail fadein" :src="picture.fileToBase64">
                         <div class="thumbnail-actions">
                           <div class="actions">
-                            <button class="mdi mdi-magnify-plus-outline action-button" v-bind="{ id: picture.id }" @click="zoom"></button>
-                            <button class="mdi mdi-delete-forever action-button" v-bind="{ id: picture.id, mode: 'thumbnail' }" @click="deletePicture"></button>
+                            <button class="mdi mdi-magnify-plus-outline action-button" v-bind="{ id: picture.id, 'array-position': index }" @click="zoom"></button>
+                            <button class="mdi mdi-delete-forever action-button" v-bind="{ id: picture.id, mode: 'thumbnail', 'array-position': index }" @click="deletePicture"></button>
                           </div>
                         </div>
                       </div>
