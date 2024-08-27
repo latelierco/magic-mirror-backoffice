@@ -13,7 +13,6 @@
     getFirestore
   } = inject('firestore')
 
-
   import {
     AddUserPhotosError,
     GetExistingPhotosError,
@@ -47,17 +46,17 @@
   } = config
 
 
-  const suspendMesssage = ref({
+  const suspendMesssage = {
     fr: 'Génération du modèle, merci de bien vouloir patienter ..',
     eng: 'Generating model.',
-  })
+  }
 
-  const confirmation = ref({
+  const confirmation = {
     fr: 'Les images de l\'utilisateur ont bien été enregistrées',
     eng: 'User pictures have been saved successfully',
-  })
+  }
 
-  const errMessage = ref({
+  const errMessage = {
     AddUserPhotosError: {
       fr: 'Une erreur inconnue est survenue sur la page',
       eng: 'An unknown error occured on page',
@@ -70,11 +69,12 @@
       fr: 'Une erreur est survenue lors de l\'enregistrement des photos de l\'utilisateur',
       eng: 'Saving user photos caused an error',
     },
-  })
+  }
 
-  const warningMessage = ref({
+  const warningMessage = {
     fr: 'Etes-vous certain de vouloir supprimer cette image ?'
-  })
+  }
+
 
   const User = {
     current: {
@@ -114,185 +114,30 @@
     }
   }
 
+  let state = null
+  let video = null
+  let canvas = null
   let streaming = false
   let canvasInterval = null
-
   const width = 640
   // height will be computed
   // based on the input stream
   let height = 0
 
 
-  let state = null
-  let video = null
-  let canvas = null
-  let appBody = null
-
-  const backdropIsActive = ref(false)
-  const backdropColor = ref('blue')
-  const hasFlash = ref(false)
-  const featured = ref()
-  const translateValue = ref()
-  const stripShowing = ref(false)
-  const userMessage = ref('')
-  const suspendMessage = ref(false)
-  const messageElShowing = ref(false)
-  const alertConfirmShowing = ref(false)
-  const promptShowing = ref(false)
-  const backdropZIndexHigher = ref(false)
-  const imageToDelete = ref()
-  const promptMode = ref()
-
-
-  const docRef = doc(db, 'users', userId)
-  const snap = await getDoc(docRef)
-  User.current = Object.assign({}, snap.data(), { id: userId })
-  console.debug('User.current', User.current)
-
-  const UISuspend = () => {
-    backdropColor.value = 'blue'
-    const { fr, eng } = suspendMesssage.value
-    suspendMessage.value = true
-    assignUserMessage(fr)
-    console.info(`[INFO] ${ eng }`)
-  }
-
-  const UIConfirm = async() => {
-    backdropColor.value = 'blue'
-    const { fr, eng } = confirmation.value
-    suspendMessage.value = false
-    assignUserMessage(fr)
-    console.info(`[INFO] ${ eng }`)
-    await userMessageFadeOut()
-  }
-
   const UIAlert = async(err) => {
-    backdropColor.value = 'red'
-    const errName = getErrorName(err)
+    // backdropColor.value = 'red'
+    // const errName = getErrorName(err)
 
-    const { fr, eng } = errMessage?.value?.[errName] ||
-      errMessage.value['AddUserPhotosError']
+    // const { fr, eng } = errMessage?.value?.[errName] ||
+    //   errMessage.value['AddUserPhotosError']
 
-    suspendMessage.value = false
-    assignUserMessage(fr)
-    alertConfirmShowing.value = true
+    // suspendMessage.value = false
+    // assignUserMessage(fr)
+    // alertConfirmShowing.value = true
 
-    console.error(`[ERROR] ${ eng }`)
-    console.error(err)
-  }
-
-  const UIWarning = async() => {
-    backdropColor.value = 'red'
-    const { fr } = warningMessage.value
-    suspendMessage.value = false
-    assignUserMessage(fr)
-    backdropZIndexHigher.value = true
-  }
-
-  const getErrorName = err => {
-    return err.constructor.name
-  }
-
-  const assignUserMessage = msg => {
-    userMessage.value = msg
-    backdropIsActive.value = true
-    messageElShowing.value = true
-  }
-
-  const backdropToLower = () => {
-    backdropColor.value = 'blue'
-    messageElShowing.value = false
-    alertConfirmShowing.value = false
-    promptShowing.value = false
-    backdropZIndexHigher.value = false
-  }
-
-  const userMessageFadeOut = (delay = null) => {
-
-    if (suspendMessage.value === true)
-      return
-
-    return new Promise(resolve => {
-      return setTimeout(() => {
-        stripShowing.value = false
-        backdropIsActive.value = false
-        backdropToLower()
-        return resolve()
-      }, !!delay && delay || DELAY)
-    })
-  }
-
-  const redirect = () => {
-    setTimeout(() => router.push(`/users/${ userId }`), DELAY)
-  }
-
-  const capturePhoto = e => {
-
-    e.preventDefault()
-
-    hasFlash.value = true;
-    video.pause()
-
-    const data = getCaptureData()
-
-    const photoObj = {
-      id: getUuid(),
-      deleteStatus: false,
-      fileToBase64: data,
-      mimeType: 'image/jpeg',
-      saveStatus: false
-    }
-
-    state.photoList.push(photoObj)
-    state.stripList.push(photoObj)
-
-    setTimeout(() => {
-      video.play()
-      hasFlash.value = false
-    }, 1000)
-  }
-
-  const getCaptureData = () => {
-    const height = getVideoHeight()
-    const context = canvas.getContext('2d')
-    context.drawImage(video, 0, 0, WIDTH, height)
-    return canvas.toDataURL('image/jpeg')
-  }
-
-  const getVideoHeight = () => {
-    return video.videoHeight
-  }
-
-  const submitForm = async() => {
-    try {
-      User.capitalize()
-      UISuspend()
-      await User.save()
-      userMessage.value = ''
-      suspendMessage.value = false
-      await userMessageFadeOut(DELAY / 10)
-      setTimeout(() => {
-        UIConfirm()
-        redirect()        
-      }, 500)
-    } catch(err) {
-      UIAlert(err)
-    }
-  } 
-
-  const reduceHttpBody = () => {
-    return state.photoList.filter(photo => {
-      return photo.saveStatus === false ||
-        (
-          photo.saveStatus === true &&
-          photo.deleteStatus === true
-        )
-    })
-      .map(photo => {
-        if (photo.deleteStatus)
-          delete photo.fileToBase64
-        return photo
-      })
+    // console.error(`[ERROR] ${ eng }`)
+    // console.error(err)
   }
 
   const getExistingPhotos = () => {
@@ -307,10 +152,6 @@
       })
       .then(list => concatToPhotoList(list))
       .catch(err => UIAlert(err))
-  };
-
-  const getStripList = () => {
-    return state.photoList.filter(photo => photo.deleteStatus !== true)
   }
 
   const getHttpServiceUrl = () => {
@@ -324,24 +165,8 @@
     return list.forEach(photo => {
       photo.id = getPhotoId(photo.fileName)
       state.photoList.push(photo)
-      state.stripList.push(photo)
     })
   }
-
-  const toPhotoList = list => {
-    if (!list?.length)
-      return []
-    state.photoList = []
-    return list.forEach(photo => {
-      photo.id = getPhotoId(photo.fileName)
-      state.photoList.push(photo)
-    })
-  }
-
-
-  /**
-   * Video Setup
-   */
 
   const videoStartup = () => {
     webcamStart()
@@ -410,147 +235,45 @@
     }, 1000 / 30)
   }
 
-  /**
-   * 
-   */
 
-  const zoom = e => {
+  const capturePhoto = e => {
 
     e.preventDefault()
 
-    backdropIsActive.value = true
-    stripShowing.value = true
-    backdropColor.value = 'blue'
+    // hasFlash.value = true;
+    // video.pause()
 
-    const element = getEventElement(e)
-    console.debug('element', element)
-    featured.value = getPhotoIndex(element)
+    const data = getCaptureData()
 
-    state.stripList = getStripList()
-    translateValue.value = getTranslateValue(featured.value)
-  }
-
-  const deletePicture = e => {
-
-    e.preventDefault()
-
-    const element = getEventElement(e)
-    const photoIndex = getPhotoIndex(element)
-
-    promptMode.value = getPromptMode(element)
-
-    imageToDelete.value = element.id
-    UIWarning()
-    promptShowing.value = true
-  }
-
-  const deleteConfirmed = e => {
-
-    e.preventDefault()
-
-    const photo = state.photoList
-      .find(image => image.id === imageToDelete.value)
-      .deleteStatus = true
-
-    if (promptMode.value === 'THUMBNAIL') {
-      backdropIsActive.value = false
-      return void backdropToLower()
+    const photoObj = {
+      id: getUuid(),
+      deleteStatus: false,
+      fileToBase64: data,
+      mimeType: 'image/jpeg',
+      saveStatus: false
     }
 
-    state.stripList = getStripList()
-    featured.value = getNextIndex()
-    translateValue.value = getTranslateValue(featured.value)
+    state.photoList.push(photoObj)
 
-    return void backdropToLower()
+    console.debug('state.photoList', state.photoList)
+
+    // setTimeout(() => {
+    //   video.play()
+    //   hasFlash.value = false
+    // }, 1000)
   }
 
-  const getPromptMode = el => {
-    return el?.getAttribute('prompt-mode')
+  const getCaptureData = () => {
+    const height = getVideoHeight()
+    const context = canvas.getContext('2d')
+    context.drawImage(video, 0, 0, WIDTH, height)
+    return canvas.toDataURL('image/jpeg')
   }
 
-  const getPhotoIndex = el => {
-    const idx = el?.getAttribute('array-position')
-    return parseInt(idx, 10)
+  const getVideoHeight = () => {
+    return video.videoHeight
   }
 
-  const getNextIndex = () => {
-    if (
-      isPhotoStripsLast() === true &&
-      isPhotoStripsFirst() === false
-    ) --featured.value
-
-    return featured.value
-  }
-
-  const isPhotoStripsLast = () => {
-    console.debug('state.stripList.length', state.stripList.length)
-    console.debug('featured.value', featured.value)
-    return state.stripList.length === featured.value
-  }
-
-  const isPhotoStripsFirst = () => {
-    return featured.value === 0
-  }
-
-  const nextPicture = e => {
-    e.preventDefault()
-    const element = getEventElement(e)
-    const elementId = getPhotoIndex(element)
-    const next = getNext(elementId)
-    featured.value = next
-    translateValue.value = getTranslateValue(next)
-  }
-
-  const getNext = n => {
-    const max = state.photoList.length
-    const next = + n + 1
-    if (next >= max)
-      return + n
-    return next
-  }
-
-  const previonsPicture = e => {
-    e.preventDefault()
-    const min = 0
-    const element = getEventElement(e)
-    const elementId = getPhotoIndex(element)
-    const prev = getPrev(elementId)
-    featured.value = prev
-    translateValue.value = getTranslateValue(prev)
-  }
-
-  const getPrev = n => {
-    const min = 0
-    const prev = + n - 1
-    if (prev < min)
-      return + n
-    return prev
-  }
-
-  const getTranslateValue = featuredIdx => {
-    return featuredIdx * (640 + 120) * -1
-  }
-
-  const getParentNodeImageElement = element => {
-
-    const parentNodeList = element
-      .parentNode
-      .parentNode
-      .parentNode
-      .childNodes
-
-    return Array
-      .prototype
-      .find
-      .call(
-        parentNodeList,
-        el => el instanceof HTMLImageElement
-    )
-  }
-
-  const getEventElement = e => {
-    return e.target
-  }
 
   onMounted(() => {
 
@@ -560,22 +283,13 @@
     })
 
     getExistingPhotos();
+
+    console.debug('state.photoList', state.photoList)
+
     setTimeout(() => {
 
       video = document.querySelector('video')
       canvas = document.querySelector('canvas')
-      appBody = document.querySelector('#app')
-
-      console.debug('appBody', appBody)
-
-      appBody.addEventListener('keydown', async(e) => {
-        if (
-          e.key !== 'Escape' ||
-          backdropIsActive.value === false
-        ) return
-        await userMessageFadeOut()
-      })
-
       videoStartup()
 
     }, 1000)
@@ -586,8 +300,8 @@
     clearInterval(canvasInterval)
   })
 
-</script>
 
+</script>
 
 <template>
 
@@ -615,7 +329,6 @@
 
             <div id="form-main-container">
 
-
               <div id="photo-capture">
 
                 <video id="video">Video stream not available.</video>
@@ -628,16 +341,16 @@
 
                 <div id="photo-list">
 
-                  <template v-for="(picture, index) in state.stripList" :key="picture.id">
+                  <template v-for="(picture, index) in state.photoList" :key="picture.id">
 
-                    <div v-if="picture.deleteStatus === false" class="picture-item">
+                    <div class="picture-item" :class=" picture.deleteStatus === false ? 'showing' : '' " >
 
                       <div class="user-thumbnail-holder thumnail-action-margin-right">
                         <img class="user-thumbnail fadein" :src="picture.fileToBase64">
                         <div class="thumbnail-actions">
                           <div class="actions">
                             <button class="mdi mdi-magnify-plus-outline action-button" v-bind="{ id: picture.id, 'array-position': index }" @click="zoom"></button>
-                            <button class="mdi mdi-delete-forever action-button" v-bind="{ id: picture.id, 'prompt-mode': 'THUMBNAIL', 'array-position': index }" @click="deletePicture"></button>
+                            <button class="mdi mdi-delete-forever action-button" v-bind="{ id: picture.id, mode: 'thumbnail', 'array-position': index }" @click="deletePicture"></button>
                           </div>
                         </div>
                       </div>
@@ -651,6 +364,8 @@
 
               </div>
 
+
+
             </div>
 
             <v-divider class="h2-hr-main mt-5"></v-divider>
@@ -659,110 +374,14 @@
               Prendre une photo
             </button> 
 
-            <button id="savebutton" type="button" class="latelier-form-input latelier-form-submit mt-6 mb-4" @click="submitForm">
-              Enregistrer
-            </button>
-
-
 
           </form>
 
       </v-container>
 
-      <div id="confirmation-holder" :class=" backdropIsActive === true ? 'fadein' : 'fadeout' ">
-
-        <div v-if="backdropZIndexHigher === true" id="backdrop-el" :class="[ backdropColor, 'higher' ]"></div>
-        <div v-else id="backdrop-el" :class="[ backdropColor ]" @click="userMessageFadeOut"></div>
-
-        <div id="messagebox-el" :class=" messageElShowing === true ? 'showing' : '' ">
-
-
-          <span v-if=" suspendMessage === true " class="suspend-message">{{ userMessage }} <div class="loader"></div></span>
-          <span v-else>{{ userMessage }}</span>
-
-          <div id="prompt" :class=" promptShowing === true ? 'showing' : '' ">
-            <button @click="deleteConfirmed">Oui</button>
-            <button v-if="promptMode === 'THUMBNAIL'" @click="userMessageFadeOut">Non</button>
-            <button v-else @click="backdropToLower">Non</button>
-          </div>
-
-          <div id="alert-confirm" :class=" alertConfirmShowing === true ? 'showing' : '' ">
-            <button @click="userMessageFadeOut">Ok</button>
-          </div>
-
-        </div>
-
-
-        <button id="backdrop-close" title="Fermer" class="mdi mdi-close" @click="userMessageFadeOut"></button>
-
-        <div id="picture-strip-holder" :class=" stripShowing === true ? 'showing' : '' ">
-
-          <div id="picture-strip" :style="{ transform: 'translate(' + translateValue + 'px )' }">
-
-
-
-            <template v-for="(picture, index) in state.stripList">
-
-
-              <div v-if="picture.deleteStatus === false" class="picture-block" :class=" featured === index ? 'featured' : '' ">
-
-                <img class="picture-el" :src="picture.fileToBase64" />
-
-
-                <div class="picture-actions-block" :class=" featured === index  ? 'action-featured' : '' ">
-                  
-                  <div class="picture-actions left">
-
-                    <div>
-
-                      <button title="Image précédente" class="mdi mdi-arrow-left-drop-circle-outline large-action-button" v-bind="{ id: index, 'array-position': index }" @click="previonsPicture"></button>
-
-                    </div>
-
-                  </div>
-
-                </div>
-
-
-
-                <div class="picture-actions-block" :class=" featured === index  ? 'action-featured' : '' ">
-
-                  <div class="picture-actions right">
-
-                    <div>
-
-                      <button title="Image suivante" class="mdi mdi-arrow-right-drop-circle-outline large-action-button" v-bind="{ id: index, 'array-position': index }" @click="nextPicture"></button>
-
-                      <v-divider class="hr-picture-actions"></v-divider>
-
-                    </div>
-
-                    <div>
-
-                      <button title="Supprimer cette image" class="mdi mdi-delete-forever large-action-button" v-bind="{ id: picture.id, 'prompt-mode': 'STRIP', 'array-position': index }" @click="deletePicture"></button>
-
-                    </div>
-
-                  </div>
-
-                </div>
-
-
-
-              </div>
-
-            </template>
-
-          </div>
-
-        </div>
-
-      </div>
-
     </v-main>
   </v-app>
 </template>
-
 
 <style scped>
 
@@ -805,13 +424,13 @@
   }
 
   .picture-item {
-/*    display: none;*/
+    display: none;
     margin-bottom: 18px;
   }
-/*
+
   .picture-item.showing {
     display: block;
-  }*/
+  }
 
   .user-thumbnail-holder:hover > .thumbnail-actions {
     display: block;

@@ -11,6 +11,7 @@
     "@mdi/font": "7.4.47",
     "core-js": "^3.37.1",
     "firebase": "^10.12.5",
+    "http-server": "^14.1.1",
     "roboto-fontface": "*",
     "unplugin-vue-router": "^0.10.7",
     "vue": "^3.4.31",

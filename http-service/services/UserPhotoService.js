@@ -132,7 +132,7 @@ class UserPhotoService {
         const filePath = this.getFilePath(dirPath, fileName)
         const fileData = this.stripFileData(fileToBase64)
         const buf = Buffer.from(fileData, 'base64')
-        return await writeFile(filePath, buf);
+        return await writeFile(filePath, buf)
       });
     return Promise.all(ps)
       .then(() => log.info('saving images to directory - OK'))
@@ -146,14 +146,15 @@ class UserPhotoService {
 
   async deleteSelectedUserPhotos(photoList, dirPath) {
     const ps = photoList
-      .filter(photo => photo.deleteStatus === true)
+      .filter(photo => photo.deleteStatus === true && photo.saveStatus === true)
       .map(async(photo) => {
         const fileName = this.getFileName(photo)
         const filePath = this.getFilePath(dirPath, fileName)
         return await unlink(filePath);
       });
-    log.info('deleting images from directory - OK')
+
     return Promise.all(ps)
+      .then(() => log.info('deleting images from directory - OK'))
   }
 
   async modelEncode() {
