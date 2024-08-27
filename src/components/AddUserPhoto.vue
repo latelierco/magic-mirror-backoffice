@@ -78,7 +78,6 @@
 
   const User = {
     current: {
-      user_name: '',
       name_first: '',
       name_last: '',
       location_home: {
@@ -97,7 +96,7 @@
     save: () => {
       const errMessage = 'Error: calling backoffice HTTP service failed with status code'
       const url = getHttpServiceUrl()
-      const body = stripBody()
+      const body = reduceHttpBody()
 
       return fetch(url, {
         method: 'PATCH',
@@ -128,6 +127,7 @@
   let canvas = null
   const pictureIdx = ref()
   const photoList = ref([])
+  const stripList = ref([])
   const backdropIsActive = ref(false)
   const backdropColor = ref('blue')
   const hasFlash = ref(false)
@@ -141,6 +141,7 @@
   const promptShowing = ref(false)
   const backdropZIndexHigher = ref(false)
   const imageToDelete = ref()
+  const promptMode = ref()
 
 
   const docRef = doc(db, 'users', userId)
@@ -198,16 +199,24 @@
     messageElShowing.value = true
   }
 
+  const backdropToLower = () => {
+    backdropColor.value = 'blue'
+    messageElShowing.value = false
+    alertConfirmShowing.value = false
+    promptShowing.value = false
+    backdropZIndexHigher.value = false
+  }
+
   const userMessageFadeOut = (delay = null) => {
+
     if (suspendMessage.value === true)
       return
+
     return new Promise(resolve => {
       return setTimeout(() => {
         stripShowing.value = false
-        alertConfirmShowing.value = false
-        promptShowing.value = false
-        messageElShowing.value = false
         backdropIsActive.value = false
+        backdropToLower()
         return resolve()
       }, !!delay && delay || DELAY)
     })
@@ -267,7 +276,7 @@
     }
   } 
 
-  const stripBody = () => {
+  const reduceHttpBody = () => {
     return photoList.value.filter(photo => {
       return photo.saveStatus === false ||
         (
@@ -295,6 +304,10 @@
       .then(list => concatToPhotoList(list))
       .catch(err => UIAlert(err))
   };
+
+  const getStripList = () => {
+    return photoList.value.filter(photo => photo.deleteStatus !== true)
+  }
 
   const getHttpServiceUrl = () => {
     const userName = User.getSlug()
@@ -325,7 +338,7 @@
    * Video Setup
    */
 
-  const videoStartup = photoList => {
+  const videoStartup = () => {
     webcamStart()
     videoSetup()
     videoToCanvas()
@@ -393,10 +406,13 @@
   const zoom = e => {
 
     e.preventDefault()
-    const pictureId = e.target.id;
+
+    const pictureId = getEventElementId(e)
     backdropIsActive.value = true
     stripShowing.value = true
     backdropColor.value = 'blue'
+
+    stripList.value = getStripList()
 
     pictureIdx.value = getPictureIndex(pictureId)
     featured.value = pictureIdx.value
@@ -404,30 +420,63 @@
   }
 
   const deletePicture = e => {
+
     e.preventDefault()
-    const pictureId = e.target.id
+
+    const pictureId = getEventElementId(e)
+    const element = getEventElement(e)
+    const photoIndex = getPhotoIndex(element)
+
+    promptMode.value = getPromptMode(element)
+
     imageToDelete.value = pictureId
     UIWarning()
     promptShowing.value = true
   }
 
-  const deleteConfirmed = () => {
-    backdropIsActive.value = false
-    promptShowing.value = false
+  const deleteConfirmed = e => {
+
+    e.preventDefault()
+
     photoList.value
       .find(image => image.id === imageToDelete.value)
       .deleteStatus = true
+
+    stripList.value = getStripList()
+
+    if (promptMode.value === 'thumbnail') {
+      backdropIsActive.value = false
+      return void backdropToLower()
+    }
+
+    if (isPhotoStripsLast() === true)
+      translateValue.value = getTranslateValue(--featured.value)
+
+    return void backdropToLower()
+  }
+
+  const getPromptMode = el => {
+    return el?.getAttribute('mode')
+  }
+
+  const getPhotoIndex = el => {
+    return el?.getAttribute('array-position')
+  }
+
+  const isPhotoStripsLast = () => {
+    return stripList.value.length === featured.value
   }
 
   const nextPicture = e => {
     e.preventDefault()
-    const next = getNext(e.target.id)
+    const elementId = getEventElementId(e)
+    const next = getNext(elementId)
     featured.value = next
     translateValue.value = getTranslateValue(next)
   }
 
   const getNext = n => {
-    const max = photoList.value.length
+    const max = stripList.value.length
     const next = + n + 1
     if (next >= max)
       return + n
@@ -437,7 +486,8 @@
   const previonsPicture = e => {
     e.preventDefault()
     const min = 0
-    const prev = getPrev(e.target.id)
+    const elementId = getEventElementId(e)
+    const prev = getPrev(elementId)
     featured.value = prev
     translateValue.value = getTranslateValue(prev)
   }
@@ -451,7 +501,7 @@
   }
 
   const getPictureIndex = pictureId => {
-    return photoList
+    return stripList
       .value
       .findIndex(
         picture => picture.id === pictureId
@@ -479,6 +529,15 @@
     )
   }
 
+  const getEventElement = e => {
+    return e.target
+  }
+
+  const getEventElementId = e => {
+    const element = getEventElement(e)
+    return element.id
+  }
+
   onMounted(() => {
 
     video = document.querySelector('video')
@@ -495,7 +554,7 @@
     getExistingPhotos();
 
     setTimeout(() => {
-      videoStartup(photoList.value)
+      videoStartup()
     }, 250)
   })
 
@@ -555,7 +614,7 @@
                         <div class="thumbnail-actions">
                           <div class="actions">
                             <button class="mdi mdi-magnify-plus-outline action-button" v-bind="{ id: picture.id }" @click="zoom"></button>
-                            <button class="mdi mdi-delete-forever action-button" v-bind="{ id: picture.id }" @click="deletePicture"></button>
+                            <button class="mdi mdi-delete-forever action-button" v-bind="{ id: picture.id, mode: 'thumbnail' }" @click="deletePicture"></button>
                           </div>
                         </div>
                       </div>
@@ -566,7 +625,6 @@
                   </template>
 
                 </div>
-
 
               </div>
 
@@ -592,7 +650,8 @@
 
       <div id="confirmation-holder" :class=" backdropIsActive === true ? 'fadein' : 'fadeout' ">
 
-        <div id="backdrop-el" :class="[ backdropColor  ]" @click="userMessageFadeOut"></div>
+        <div v-if="backdropZIndexHigher === true" id="backdrop-el" :class="[ backdropColor, 'higher' ]"></div>
+        <div v-else id="backdrop-el" :class="[ backdropColor ]" @click="userMessageFadeOut"></div>
 
         <div id="messagebox-el" :class=" messageElShowing === true ? 'showing' : '' ">
 
@@ -618,11 +677,12 @@
 
           <div id="picture-strip" :style="{ transform: 'translate(' + translateValue + 'px )' }">
 
-            <template v-for="(picture, index) in photoList">
+            <template v-for="(picture, index) in stripList">
 
 
+              <!-- deleteStatus -->
 
-              <div class="picture-block" :class=" featured === index ? 'featured' : '' ">
+              <div v-if="picture.deleteStatus === false" class="picture-block" :class=" featured === index ? 'featured' : '' ">
 
                 <img class="picture-el" :src="picture.fileToBase64" />
 
@@ -632,7 +692,7 @@
 
                     <div>
 
-                      <button title="Image précédente" class="mdi mdi-arrow-left-drop-circle-outline large-action-button" v-bind="{ id: index }" @click="previonsPicture"></button>
+                      <button title="Image précédente" class="mdi mdi-arrow-left-drop-circle-outline large-action-button" v-bind="{ id: index, 'array-position': index }" @click="previonsPicture"></button>
 
                     </div>
 
@@ -648,15 +708,15 @@
 
                     <div>
 
-                      <button title="Image suivante" class="mdi mdi-arrow-right-drop-circle-outline large-action-button" v-bind="{ id: index }" @click="nextPicture"></button>
+                      <button title="Image suivante" class="mdi mdi-arrow-right-drop-circle-outline large-action-button" v-bind="{ id: index, 'array-position': index }" @click="nextPicture"></button>
 
                       <v-divider class="hr-picture-actions"></v-divider>
 
                     </div>
 
                     <div>
-                      
-                      <button title="Supprimer cette image" class="mdi mdi-delete-forever large-action-button" v-bind="{ id: picture.id }"></button>
+
+                      <button title="Supprimer cette image" class="mdi mdi-delete-forever large-action-button" v-bind="{ id: picture.id, mode: 'strip', 'array-position': index }" @click="deletePicture"></button>
 
                     </div>
 
@@ -823,6 +883,10 @@
 
   .picture-block.featured {
     opacity: 1;
+  }
+
+  .picture-block.deleted {
+    display: none;
   }
 
   #backdrop-close {

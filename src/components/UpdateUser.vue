@@ -49,6 +49,9 @@
   const snap = await getDoc(docRef)
   User.current = Object.assign({}, snap.data(), { id: userId.value })
 
+  console.debug('userId.value', userId.value)
+  console.debug('User.current', User.current)
+
   const UIConfirm = () => {
     const { fr, eng } = confirmation.value
     assignUserMessage(fr)

@@ -44,6 +44,11 @@
     z-index: 1200;
   }
 
+  #backdrop-el.higher {
+    opacity: 0.8;
+    z-index: 1350;
+  }
+
   #messagebox-el {
     height: calc(50% - 200px);
     top: calc(50% - 200px);

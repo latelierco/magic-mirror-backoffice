@@ -24,3 +24,6 @@ pnpm-debug.log*
 # http-service
 http-service/node_modules
 
+# firebase credentials
+security/*
+

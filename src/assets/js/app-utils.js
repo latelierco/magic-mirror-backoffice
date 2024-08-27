@@ -22,8 +22,9 @@ const appUtils = {
     }
   },
   obectFormatstrings: obj => {
+    delete obj.id
     for (const key in obj) {
-      obj[key] = appUtils.capitalize(obj[key])
+      obj[key] = key !== appUtils.capitalize(obj[key])
     }
   },
   extractErrContent: err => {

@@ -40,7 +40,8 @@
     const snap = await getDocs(userQuery)
     snap.forEach(doc => {
       const userId = doc.id
-      users.value.push(Object.assign({}, { id: userId }, doc.data()))
+      const user = Object.assign({}, { id: userId }, doc.data())
+      users.value.push(user)
     })
   }
 
