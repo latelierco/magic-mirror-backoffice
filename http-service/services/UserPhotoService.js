@@ -9,7 +9,8 @@ const {
   mkdir,
   readFile,
   writeFile,
-  unlink
+  unlink,
+  rmdir
 } = require('node:fs/promises')
 
 
@@ -37,7 +38,7 @@ class UserPhotoService {
   }
 
 
-  async saveUserPhotos (userName, photoList) {
+  async saveUserPhotos(userName, photoList) {
     if (!this.isValidUserName())
       throw Error('Error: user name is not valid', { cause: 400 })
 
@@ -51,6 +52,108 @@ class UserPhotoService {
     await this.modelEncode()
 
     return await this.getDirectoryContent(userName)
+  }
+
+
+  async deleteUserPhotos(userName) {
+    if (!this.isValidUserName())
+      throw Error('Error: user name is not valid', { cause: 400 })
+
+    const dirPath = this.getDirectoryPath(userName)
+
+    if (await this.directoryExists(dirPath, userName) === false)
+      return
+
+    const photoList = await this.getFileList(dirPath)
+    const results = await this.iterateDelete(photoList, dirPath)
+    await rmdir(dirPath)
+    return await this.modelEncode()
+  }
+
+
+  async iterateDelete(photoList, dirPath) {
+    const ps = photoList.map(async(fileName) => {
+      const filePath = this.getFilePath(dirPath, fileName)
+      return await unlink(filePath)
+    })
+    return await Promise.all(ps)
+  }
+
+
+  async getPhotoFiles(dirPath) {
+    const files = await this.getFileList(dirPath)
+    const ps = files.map(fileName => {
+        const filePath = this.getFilePath(dirPath, fileName)
+        const mimeType = this.getMimeType(filePath)
+        return {
+          mimeType,
+          filePath,
+          fileName
+        }
+      })
+      .filter(obj => /^image\/(jpeg|png)$/.test(obj.mimeType))
+      .map(async(obj) => {
+        const fileCreatedAt = await this.getCreatedDate(obj.filePath)
+        const fileData = await this.toBase64(obj.filePath)
+        const fileToBase64 = 'data:' + obj.mimeType + ';base64,' + fileData
+
+        return Object.assign(
+          {},
+          obj,
+          {
+            fileCreatedAt,
+            fileToBase64,
+            saveStatus: true,
+            deleteStatus: false
+          }
+        )
+      })
+    return await Promise.all(ps)
+  }
+
+
+  async saveFilesToFileSystem(photoList, dirPath) {
+    const ps = photoList
+      .filter(
+        photo => photo.deleteStatus === false &&
+          photo.saveStatus === false
+      )
+      .map(async(photo) => {
+        const { mimeType, fileToBase64 } = photo
+        const fileName = this.getFileName(photo)
+        const filePath = this.getFilePath(dirPath, fileName)
+        const fileData = this.stripFileData(fileToBase64)
+        const buf = Buffer.from(fileData, 'base64')
+        return await writeFile(filePath, buf)
+      });
+    return await Promise.all(ps)
+    log.info('saving images to directory - OK')
+  }
+
+
+  async deleteSelectedUserPhotos(photoList, dirPath) {
+    const ps = photoList
+      .filter(photo => photo.deleteStatus === true && photo.saveStatus === true)
+      .map(async(photo) => {
+        const fileName = this.getFileName(photo)
+        const filePath = this.getFilePath(dirPath, fileName)
+        return unlink(filePath)
+      });
+
+    await Promise.all(ps)
+    log.info('deleting images from directory - OK')
+  }
+
+
+  async modelEncode() {
+    return new Promise((resolve, reject) => {
+      const scriptProcess = exec('npm run encode')
+      scriptProcess.on('close', () => {
+        log.info('generating face recognition model - OK')
+        return resolve()
+      })
+      scriptProcess.on('error', err => reject(err))
+    })
   }
 
 
@@ -88,54 +191,8 @@ class UserPhotoService {
   }
 
 
-  async getPhotoFiles(dirPath) {
-    const files = await readdir(dirPath)
-    const ps = files.map(fileName => {
-        const filePath = this.getFilePath(dirPath, fileName)
-        const mimeType = this.getMimeType(filePath)
-        return {
-          mimeType,
-          filePath,
-          fileName
-        }
-      })
-      .filter(obj => /^image\/(jpeg|png)$/.test(obj.mimeType))
-      .map(async(obj) => {
-        const fileCreatedAt = await this.getCreatedDate(obj.filePath)
-        const fileData = await this.toBase64(obj.filePath)
-        const fileToBase64 = 'data:' + obj.mimeType + ';base64,' + fileData
-
-        return Object.assign(
-          {},
-          obj,
-          {
-            fileCreatedAt,
-            fileToBase64,
-            saveStatus: true,
-            deleteStatus: false
-          }
-        )
-      })
-    return Promise.all(ps)
-  }
-
-
-  async saveFilesToFileSystem(photoList, dirPath) {
-    const ps = photoList
-      .filter(
-        photo => photo.deleteStatus === false &&
-          photo.saveStatus === false
-      )
-      .map(async(photo) => {
-        const { mimeType, fileToBase64 } = photo
-        const fileName = this.getFileName(photo)
-        const filePath = this.getFilePath(dirPath, fileName)
-        const fileData = this.stripFileData(fileToBase64)
-        const buf = Buffer.from(fileData, 'base64')
-        return await writeFile(filePath, buf)
-      });
-    return Promise.all(ps)
-      .then(() => log.info('saving images to directory - OK'))
+  async getFileList(dirPath) {
+    return await readdir(dirPath)
   }
 
 
@@ -143,30 +200,6 @@ class UserPhotoService {
     return fileToBase64.replace(/^data:image\/\w+;base64,/, '')
   }
 
-
-  async deleteSelectedUserPhotos(photoList, dirPath) {
-    const ps = photoList
-      .filter(photo => photo.deleteStatus === true && photo.saveStatus === true)
-      .map(async(photo) => {
-        const fileName = this.getFileName(photo)
-        const filePath = this.getFilePath(dirPath, fileName)
-        return await unlink(filePath);
-      });
-
-    return Promise.all(ps)
-      .then(() => log.info('deleting images from directory - OK'))
-  }
-
-  async modelEncode() {
-    return new Promise((resolve, reject) => {
-      const scriptProcess = exec('npm run encode')
-      scriptProcess.on('close', () => {
-        log.info('generating face recognition model - OK')
-        return resolve()
-      })
-      scriptProcess.on('error', err => reject(err))
-    })
-  }
 
   getFilePath(dirPath, file) {
     return `${ dirPath }/${ file }`;

@@ -764,7 +764,7 @@
 </template>
 
 
-<style scped>
+<style scoped>
 
   form {
     display: flex;
@@ -1000,30 +1000,6 @@
     opacity: .8;
   }
 
-  #messagebox-el {
-    display: none;
-  }
-
-  #messagebox-el.showing {
-    display: block;
-  }
-
-  #messagebox-el > span {
-    text-align: center;
-    width: 90%;
-    margin: 0 auto;
-    display: none;
-  }
-
-  #messagebox-el.showing > span {
-    display: block;
-  }
-
-  #messagebox-el.showing > span.suspend-message {
-    display: inline-block;
-    width: 80%;
-  }
-
   #prompt,
   #alert-confirm {
     display: none;
@@ -1060,27 +1036,6 @@
     margin-left: 50px;
   }
 
-  /* ref. : https://css-loaders.com/bars */
-  /* HTML: <div class="loader"></div> */
-  .loader {
-    margin-left: 20px;
-    display: inline-block;
-    width: 45px;
-    aspect-ratio: 1;
-    --c: no-repeat linear-gradient(#00EC7B calc(50% - 10px),#0000 0 calc(50% + 10px),#00EC7B 0);
-    background: 
-      var(--c) 0%   100%,
-      var(--c) 50%  100%,
-      var(--c) 100% 100%;
-    background-size: 20% calc(200% + 20px);
-    animation:l4 1s infinite linear;
-  }
 
-  @keyframes l4 {
-      33%  {background-position: 0% 50%,50% 100%,100% 100%}
-      50%  {background-position: 0%  0%,50%  50%,100% 100%}
-      66%  {background-position: 0%  0%,50%   0%,100%  50%}
-      100% {background-position: 0%  0%,50%   0%,100%   0%}
-  }
 
 </style>

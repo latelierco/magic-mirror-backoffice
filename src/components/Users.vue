@@ -13,8 +13,14 @@
 
   const db = getFirestore()
 
-
   import config from '../config'
+  import appUtils from '/src/assets/js/app-utils'
+
+
+  const suspendMesssage = ref({
+    fr: 'Génération du modèle, merci de bien vouloir patienter ..',
+    eng: 'Generating model.',
+  })
 
   const confirmation = ref({
     fr: 'Les utilisateurs ont bien été supprimés',
@@ -31,9 +37,10 @@
   const users = ref([])
   const editUsers = ref([])
   const userMessage = ref('')
-  const isActive = ref(false)
+  const backdropIsActive = ref(false)
   const backdropColor = ref('blue')
-
+  const messageElShowing = ref(false)
+  const suspendMessage = ref(false)
 
   const populate = async() => {
     const userQuery = query(collection(db, 'users'))
@@ -47,26 +54,56 @@
 
   const iterateDelete = async() => {
 
-    const ps = editUsers.value.map(async(userId) => {
-      try {
-        await deleteDoc(doc(db, 'users', userId))
-        const userToDeleteIndex = users.value.findIndex(user => user.id === userId)
-        users.value.splice(userToDeleteIndex, 1)
-      } catch(err) {
-        console.error(err)
-      }
-    })
+    const sequence = async(userId) => {
+      await deleteUserPhotos(userId)
+      await deleteDoc(doc(db, 'users', userId))
+      const userToDeleteIndex = users.value.findIndex(user => user.id === userId)
+      users.value.splice(userToDeleteIndex, 1)
+    }
 
-    setTimeout(() => {
-      return Promise.all(ps)
-        .then(() => editUsers.value = [])
-    }, DELAY)
+    const ps = editUsers
+      .value
+      .map(async(userId, idx) => await sequence(userId, idx))
+
+    return await Promise.all(ps)
+  }
+
+  const deleteUserPhotos = async(userId) => {
+    const userSlug = getUserSlug(userId)
+    const url = getServiceUrl(userSlug)
+    return await sendDeleteQuery(url, userSlug)
+  }
+
+  const getUserSlug = userId => {
+    const userObj = users.value.find(user => user.id === userId)
+    const { name_first } = userObj
+    return appUtils.slugify(name_first)
+  }
+
+  const getServiceUrl = userSlug => {
+    const { HTTP_SERVICE: { URL, PORT } } = config
+    return `http://${ URL }:${ PORT }/users/${ userSlug }/photos`
+  }
+
+  const sendDeleteQuery = async(url) => {
+    const resp = await fetch(url, { method: 'DELETE' })
+    if (!resp.ok)
+      throw Error(`delete query caused an error with status code ${ resp.status }`)
+    return true
+  }
+
+  const UISuspend = () => {
+    backdropColor.value = 'blue'
+    const { fr, eng } = suspendMesssage.value
+    suspendMessage.value = true
+    assignUserMessage(fr)
+    console.info(`[INFO] ${ eng }`)
   }
 
   const UIConfirm = () => {
     const { fr, eng } = confirmation.value
     assignUserMessage(fr)
-    isActive.value = true
+    suspendMessage.value = false
     console.info(`[INFO] ${ eng }`)
     userMessageFadeOut()
   }
@@ -74,8 +111,9 @@
   const UIAlert = err => {
     backdropColor.value = 'red'
     const { fr, eng } = errMessage.value
+    suspendMessage.value = false
     assignUserMessage(fr)
-    isActive.value = true
+    backdropIsActive.value = true
     console.error(`[ERROR] ${ eng }`)
     console.error(extractErrContent(err))
     userMessageFadeOut()
@@ -83,6 +121,8 @@
 
   const assignUserMessage = msg => {
     userMessage.value = msg
+    backdropIsActive.value = true
+    messageElShowing.value = true
   }
 
   const extractErrContent = err => {
@@ -90,12 +130,14 @@
   }
 
   const userMessageFadeOut = () => {
-    setTimeout(() => isActive.value = false, DELAY)
+    setTimeout(() => backdropIsActive.value = false, DELAY)
   }
 
   const suppressAction = async() => {
     try {
-      await iterateDelete()
+      UISuspend()
+      const res = await iterateDelete()
+      editUsers.value = []
       UIConfirm()
     } catch(err) {
       UIAlert(err)
@@ -184,9 +226,16 @@
     <button class="mdi mdi-account-plus user-add"></button>
   </RouterLink>
 
-  <div id="confirmation-holder" :class=" isActive === true ? 'fadein' : 'fadeout' ">
+  <div id="confirmation-holder" :class=" backdropIsActive === true ? 'fadein' : 'fadeout' ">
     <div id="backdrop-el" :class=" backdropColor "></div>
-    <div id="messagebox-el">{{ userMessage }}</div>
+
+    <div id="messagebox-el" :class=" messageElShowing === true ? 'showing' : '' ">
+      
+      <span v-if=" suspendMessage === true " class="suspend-message">{{ userMessage }} <div class="loader"></div></span>
+      <span v-else>{{ userMessage }}</span>
+
+    </div>
+
   </div>
 
 </template>

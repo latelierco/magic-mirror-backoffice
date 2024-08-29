@@ -11,9 +11,15 @@ import { fileURLToPath, URL } from 'node:url'
 
 // https://vitejs.dev/config/
 export default defineConfig({
+
+  // uncomment for debug
+  // and comment again for minified build
+
   // build: {
   //   minify: false
   // },
+
+  // production config
   plugins: [
     VueRouter(),
     Vue({

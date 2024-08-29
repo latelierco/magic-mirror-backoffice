@@ -19,4 +19,9 @@ module.exports = async (fastify, opts) => {
     const { body: photoList } = request;
     return await userPhotoService.saveUserPhotos(userName, photoList)
   })
+
+  fastify.delete('/:userName/photos', async(request, reply) => {
+    const { userName = null } = request.params
+    return await userPhotoService.deleteUserPhotos(userName)
+  })
 }

@@ -16,7 +16,8 @@
 
   const {
     obectFormatstrings,
-    extractErrContent
+    extractErrContent,
+    slugify
   } = appUtils
 
   const router = useRouter()
@@ -33,13 +34,16 @@
   })
 
   const userMessage = ref('')
-  const isActive = ref(false)
+  const backdropIsActive = ref(false)
   const backdropColor = ref('blue')
+  const messageElShowing = ref(false)
+
 
   const User = {
     current: {
       name_first: '',
       name_last: '',
+      user_name: '',
       location_home: {
         address: '',
         zip_code: '',
@@ -55,7 +59,9 @@
     stringFormat: () => obectFormatstrings(User.current),
     save: async() => {
       try {
-        await addDoc(collection(db, 'users'), User.current);
+        const userName = slugify(User.current.name_first)
+        User.current.user_name = userName
+        await addDoc(collection(db, 'users'), User.current)
       } catch(err) {
         throw Error('Error: saving user to firebase has caused an error', { cause: err })
       }
@@ -65,7 +71,7 @@
   const UIConfirm = () => {
     const { fr, eng } = confirmation.value
     assignUserMessage(fr)
-    isActive.value = true
+    backdropIsActive.value = true
     console.info(`[INFO] ${ eng }`)
     userMessageFadeOut()
   }
@@ -74,7 +80,7 @@
     backdropColor.value = 'red'
     const { fr, eng } = errMessage.value
     assignUserMessage(fr)
-    isActive.value = true
+    backdropIsActive.value = true
     console.error(`[ERROR] ${ eng }`)
     console.error(extractErrContent(err))
     userMessageFadeOut()
@@ -82,10 +88,12 @@
 
   const assignUserMessage = msg => {
     userMessage.value = msg
+    backdropIsActive.value = true
+    messageElShowing.value = true
   }
 
   const userMessageFadeOut = () => {
-    setTimeout(() => isActive.value = false, DELAY)
+    setTimeout(() => backdropIsActive.value = false, DELAY)
   }
 
   const redirect = () => {
@@ -176,9 +184,15 @@
 
       </v-container>
 
-      <div id="confirmation-holder" :class=" isActive === true ? 'fadein' : 'fadeout' ">
+      <div id="confirmation-holder" :class=" backdropIsActive === true ? 'fadein' : 'fadeout' ">
         <div id="backdrop-el" :class=" backdropColor "></div>
-        <div id="messagebox-el">{{ userMessage }}</div>
+
+        <div id="messagebox-el" :class=" messageElShowing === true ? 'showing' : '' ">
+
+          <span>{{ userMessage }}</span>
+
+        </div>
+
       </div>
 
     </v-main>
