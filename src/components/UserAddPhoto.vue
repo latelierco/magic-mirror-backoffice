@@ -122,11 +122,11 @@
   // based on the input stream
   let height = 0
 
-
-  let state = null
   let video = null
   let canvas = null
-  let appBody = null
+
+  const photoList = ref([])
+  const stripList = ref([])
 
   const backdropIsActive = ref(false)
   const backdropColor = ref('blue')
@@ -243,8 +243,8 @@
       saveStatus: false
     }
 
-    state.photoList.push(photoObj)
-    state.stripList.push(photoObj)
+    photoList.value.push(photoObj)
+    stripList.value.push(photoObj)
 
     setTimeout(() => {
       video.play()
@@ -281,7 +281,7 @@
   } 
 
   const reduceHttpBody = () => {
-    return state.photoList.filter(photo => {
+    return photoList.value.filter(photo => {
       return photo.saveStatus === false ||
         (
           photo.saveStatus === true &&
@@ -310,7 +310,7 @@
   };
 
   const getStripList = () => {
-    return state.photoList.filter(photo => photo.deleteStatus !== true)
+    return photoList.value.filter(photo => photo.deleteStatus !== true)
   }
 
   const getHttpServiceUrl = () => {
@@ -323,18 +323,18 @@
       return []
     return list.forEach(photo => {
       photo.id = getPhotoId(photo.fileName)
-      state.photoList.push(photo)
-      state.stripList.push(photo)
+      photoList.value.push(photo)
+      stripList.value.push(photo)
     })
   }
 
   const toPhotoList = list => {
     if (!list?.length)
       return []
-    state.photoList = []
+    photoList.value = []
     return list.forEach(photo => {
       photo.id = getPhotoId(photo.fileName)
-      state.photoList.push(photo)
+      photoList.value.push(photo)
     })
   }
 
@@ -426,7 +426,7 @@
     console.debug('element', element)
     featured.value = getPhotoIndex(element)
 
-    state.stripList = getStripList()
+    stripList.value = getStripList()
     translateValue.value = getTranslateValue(featured.value)
   }
 
@@ -448,9 +448,7 @@
 
     e.preventDefault()
 
-    // console.debug('state.stripList', state.stripList)
-
-    const photo = state.photoList
+    const photo = photoList.value
       .find(image => image.id === imageToDelete.value)
       .deleteStatus = true
 
@@ -459,9 +457,7 @@
       return void backdropToLower()
     }
 
-    state.stripList = getStripList()
-
-    // console.debug('state.stripList', state.stripList)
+    stripList.value = getStripList()
 
     featured.value = getNextIndex()
     translateValue.value = getTranslateValue(featured.value)
@@ -488,9 +484,9 @@
   }
 
   const isPhotoStripsLast = () => {
-    console.debug('state.stripList.length', state.stripList.length)
+    console.debug('stripList.value.length', stripList.value.length)
     console.debug('featured.value', featured.value)
-    return state.stripList.length === featured.value
+    return stripList.value.length === featured.value
   }
 
   const isPhotoStripsFirst = () => {
@@ -499,7 +495,6 @@
 
   const nextPicture = e => {
     e.preventDefault()
-    console.debug('state.stripList', state.stripList)
     const element = getEventElement(e)
     const elementId = getPhotoIndex(element)
     const next = getNext(elementId)
@@ -508,7 +503,7 @@
   }
 
   const getNext = n => {
-    const max = state.photoList.length
+    const max = stripList.value.length
     const next = + n + 1
     if (next >= max)
       return + n
@@ -517,7 +512,6 @@
 
   const previonsPicture = e => {
     e.preventDefault()
-    console.debug('state.stripList', state.stripList)
     const min = 0
     const element = getEventElement(e)
     const elementId = getPhotoIndex(element)
@@ -559,28 +553,21 @@
     return e.target
   }
 
-  onMounted(() => {
 
-    state = reactive({
-      photoList: [],
-      stripList: []
-    })
+  onMounted(() => {
 
     getExistingPhotos();
     setTimeout(() => {
 
       video = document.querySelector('video')
       canvas = document.querySelector('canvas')
-      appBody = document.querySelector('#app')
 
-      console.debug('appBody', appBody)
-
-      appBody.addEventListener('keydown', async(e) => {
+      window.addEventListener('keydown', async(e) => {
         if (
           e.key !== 'Escape' ||
           backdropIsActive.value === false
         ) return
-        await userMessageFadeOut()
+        await userMessageFadeOut(750)
       })
 
       videoStartup()
@@ -635,7 +622,7 @@
 
                 <div id="photo-list">
 
-                  <template v-for="(picture, index) in state.stripList" :key="picture.id">
+                  <template v-for="(picture, index) in stripList" :key="picture.id">
 
                     <div v-if="picture.deleteStatus === false" class="picture-item">
 
@@ -678,8 +665,8 @@
 
       <div id="confirmation-holder" :class=" backdropIsActive === true ? 'fadein' : 'fadeout' ">
 
-        <div v-if="backdropZIndexHigher === true" id="backdrop-el" :class="[ backdropColor, 'higher' ]"></div>
-        <div v-else id="backdrop-el" :class="[ backdropColor ]" @click="userMessageFadeOut"></div>
+        <div v-if="backdropZIndexHigher === true" id="backdrop-el" :class="[ backdropColor, 'higher' ]" @keyup="onKeyPress"></div>
+        <div v-else id="backdrop-el" :class="[ backdropColor ]" @click="userMessageFadeOut" @keyup="onKeyPress"></div>
 
         <div id="messagebox-el" :class=" messageElShowing === true ? 'showing' : '' ">
 
@@ -708,7 +695,7 @@
 
 
 
-            <template v-for="(picture, index) in state.stripList">
+            <template v-for="(picture, index) in stripList">
 
 
               <div v-if="picture.deleteStatus === false" class="picture-block" :class=" featured === index ? 'featured' : '' ">
