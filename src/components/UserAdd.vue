@@ -53,8 +53,7 @@
         address: '46 rue de l\'Arbre Sec',
         zip_code: '75001',
         city: 'Paris',
-      },
-      photos: [],
+      }
     },
     stringFormat: () => obectFormatstrings(User.current),
     save: async() => {

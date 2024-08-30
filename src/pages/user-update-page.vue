@@ -1,5 +1,5 @@
 <template>
-  <ListContent />
+  <UserUpdate />
 </template>
 
 <script setup>

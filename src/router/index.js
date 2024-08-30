@@ -30,32 +30,32 @@ const router = createRouter({
     {
       path: '/users',
       name: 'Users',
-      component: () => import('../pages/users-list.vue')
+      component: () => import('../pages/user-list-page.vue')
     },
     {
       path: '/users/:id',
       name: 'UserById',
       props: true,
-      component: () => import('../pages/user-update.vue')
+      component: () => import('../pages/user-update-page.vue')
     },
     {
       path: '/users/add',
       name: 'UserAdd',
       props: true,
-      component: () => import('../pages/user-add.vue')
+      component: () => import('../pages/user-add-page.vue')
     },
     {
       path: '/users/:id/photo/add',
       name: 'UserPhotoAdd',
       props: true,
-      component: () => import('../pages/user-photo-add.vue')
+      component: () => import('../pages/user-add-photo-page.vue')
     },
     // 
     {
       path: '/content-list',
       name: 'ContentList',
       props: true,
-      component: () => import('../pages/content-list.vue')
+      component: () => import('../pages/content-list-page.vue')
     },
     // 
     // {

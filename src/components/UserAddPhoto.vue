@@ -448,6 +448,8 @@
 
     e.preventDefault()
 
+    // console.debug('state.stripList', state.stripList)
+
     const photo = state.photoList
       .find(image => image.id === imageToDelete.value)
       .deleteStatus = true
@@ -458,6 +460,9 @@
     }
 
     state.stripList = getStripList()
+
+    // console.debug('state.stripList', state.stripList)
+
     featured.value = getNextIndex()
     translateValue.value = getTranslateValue(featured.value)
 
@@ -494,6 +499,7 @@
 
   const nextPicture = e => {
     e.preventDefault()
+    console.debug('state.stripList', state.stripList)
     const element = getEventElement(e)
     const elementId = getPhotoIndex(element)
     const next = getNext(elementId)
@@ -511,6 +517,7 @@
 
   const previonsPicture = e => {
     e.preventDefault()
+    console.debug('state.stripList', state.stripList)
     const min = 0
     const element = getEventElement(e)
     const elementId = getPhotoIndex(element)

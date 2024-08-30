@@ -19,10 +19,11 @@ declare module 'vue-router/auto-routes' {
    */
   export interface RouteNamedMap {
     '/': RouteRecordInfo<'/', '/', Record<never, never>, Record<never, never>>,
-    '/content-list': RouteRecordInfo<'/content-list', '/content-list', Record<never, never>, Record<never, never>>,
-    '/user-add': RouteRecordInfo<'/user-add', '/user-add', Record<never, never>, Record<never, never>>,
-    '/user-photo-add': RouteRecordInfo<'/user-photo-add', '/user-photo-add', Record<never, never>, Record<never, never>>,
-    '/user-update': RouteRecordInfo<'/user-update', '/user-update', Record<never, never>, Record<never, never>>,
-    '/users-list': RouteRecordInfo<'/users-list', '/users-list', Record<never, never>, Record<never, never>>,
+    '/content-list-page': RouteRecordInfo<'/content-list-page', '/content-list-page', Record<never, never>, Record<never, never>>,
+    '/data-model-page': RouteRecordInfo<'/data-model-page', '/data-model-page', Record<never, never>, Record<never, never>>,
+    '/user-add-page': RouteRecordInfo<'/user-add-page', '/user-add-page', Record<never, never>, Record<never, never>>,
+    '/user-add-photo-page': RouteRecordInfo<'/user-add-photo-page', '/user-add-photo-page', Record<never, never>, Record<never, never>>,
+    '/user-list-page': RouteRecordInfo<'/user-list-page', '/user-list-page', Record<never, never>, Record<never, never>>,
+    '/user-update-page': RouteRecordInfo<'/user-update-page', '/user-update-page', Record<never, never>, Record<never, never>>,
   }
 }

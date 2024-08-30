@@ -1,5 +1,5 @@
 <template>
-  <UpdateUser />
+  <UserList />
 </template>
 
 <script setup>

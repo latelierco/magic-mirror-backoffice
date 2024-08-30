@@ -1,5 +1,5 @@
 <template>
-  <Users />
+  <UserAddPhoto />
 </template>
 
 <script setup>
