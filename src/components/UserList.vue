@@ -137,7 +137,7 @@
   const suppressAction = async() => {
     try {
       UISuspend()
-      const res = await iterateDelete()
+      await iterateDelete()
       editUsers.value = []
       UIConfirm()
     } catch(err) {
@@ -173,7 +173,7 @@
 
     <v-main>
 
-      <v-container class="py-8 px-6" fluid >
+      <v-container class="py-8 pr-6 main-container-padding-left" fluid >
 
         <v-list-subheader></v-list-subheader>
 
@@ -190,7 +190,7 @@
         </div>
 
 
-        <v-divider class="mt-5 mb-2 mr-16"></v-divider>
+        <v-divider class="mt-5 mb-1 mr-16"></v-divider>
 
         <template v-for="user in users" :key="user.id">
 

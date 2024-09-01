@@ -28,6 +28,10 @@
     background-color: #F80086;
   }
 
+  .main-container-padding-left {
+    padding-left: 84px;
+  }
+
   #confirmation-holder,
   #backdrop-el,
   #messagebox-el {
@@ -120,24 +124,28 @@
     font-family: 'Montserrat';
   }
 
-  .users-icon {
+  .users-icon,
+  .contents-icon {
     font-size: 32px;
     opacity: 0.4;
   }
 
-  .users-icon-checked {
+  .users-icon-checked,
+  .contents-icon-checked {
     font-size: 32px;
     opacity: 1;
   }
 
-  .user-item {
+  .user-item,
+  .content-item {
     position: relative;
     color: #fff;
     display: flex;
     flex-direction: row;
   }
 
-  .user-item-input {
+  .user-item-input,
+  .content-item-input {
     position: absolute;
     top: 5px;
     width: 32px;
@@ -145,8 +153,10 @@
     opacity: 0;
   }
 
-  .user-item > a {
-    display: block;
+  .user-item > a,
+  .content-item > a {
+    display: flex;
+    flex-direction: row;
     margin: 12px 0 0 10px;
     font-size: 16px;
     color: #fff;
@@ -195,11 +205,9 @@
     font-size: 18px;
   }
 
-
   .sub {
     font-size: 14px;
   }
-
 
   .latelier-form-input {
     background-color: #fff;
@@ -211,6 +219,29 @@
     font-family: 'Montserrat';
   }
 
+  .latelier-form-textarea {
+    font-size: 20px;
+  }
+
+  .radio-holder-group {
+    display: flex;
+    flex-direction: row;
+    margin-left: 15px;
+    margin-bottom: 30px;
+  }
+
+  .radio-holder {
+    display: flex;
+    flex-direction: row;
+  }
+
+  .radio-holder:last-child {
+    margin-left: 40px;
+  }
+
+  .radio-holder > label {
+    font-size: 24px;
+  }
 
   .latelier-form-submit {
     background-color: #00EC7B;
@@ -218,7 +249,6 @@
     height: 40px;
     font-size: 20px;
   }
-
 
   .latelier-form-submit:hover {
     background-color: #00df75;
@@ -254,7 +284,8 @@
     font-size: 28px;
   }
 
-  .user-add-holder {
+  .user-add-holder,
+  .content-add-holder {
     opacity: .4;
     position: fixed;
     right: 80px;
@@ -270,6 +301,7 @@
 
 
   .user-add,
+  .content-add,
   .page-back {
     font-size: 33px;
     width: 42px;
@@ -280,15 +312,36 @@
   }
 
 
-  .user-add-holder:hover {
+  .user-add-holder:hover,
+  .content-add-holder:hover {
     opacity: .8;
   }
 
 
-  .user-add {
+  .user-add,
+  .content-add {
     position: absolute;
   }
 
+  .content-add {
+    top: 1px;
+    left: 5px;
+  }
+
+  .content-link {
+    display: flex;
+    flex-direction: row;
+  }
+
+  .content-link > span {
+    margin-left: 30px;
+    width: 200px;
+  }
+
+  .content-link > span:first-child {
+    margin-left: 0;
+    width: 320px;
+  }
 
   .page-back {
     color: #fff;
@@ -298,7 +351,6 @@
     padding: 10px;
     cursor: pointer;
   }
-
 
   .page-back:hover {
     opacity: .8;

@@ -26,4 +26,6 @@ http-service/node_modules
 
 # firebase credentials
 security/*
+baby-files
+package-lock.json
 

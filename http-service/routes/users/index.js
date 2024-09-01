@@ -4,7 +4,7 @@ const UserPhotoService = require('../../services/UserPhotoService')
 const userPhotoService = new UserPhotoService()
 
 const getLogger = require('../../common/log')
-const log = getLogger('ROUTE USERS')
+const log = getLogger('ROUTE:USERS')
 
 
 module.exports = async (fastify, opts) => {

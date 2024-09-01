@@ -16,7 +16,7 @@ const {
 
 const mime = require('mime-types')
 const getLogger = require('../common/log')
-const log = getLogger('USER PHOTO SERVICE')
+const log = getLogger('SERVICE:USERS')
 
 
 

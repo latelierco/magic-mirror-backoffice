@@ -3,11 +3,9 @@
 </script>
 
 <template>
-  <v-navigation-drawer style="border-right-color: rgba(255, 255, 255, .12);" v-model="drawer">
+  <v-navigation-drawer style="border-right-color: rgba(255, 255, 255, .12); width: 286px;" v-model="drawer">
 
-    <div
-      class="pa-4 drawer-header"
-    >
+    <div class="pa-4 pl-7 drawer-header">
       <div class="logo-latelier ml-2">&nbsp;</div>
 
       <h2 class="sub-title ml-2">L'Atelier</h2>
@@ -16,11 +14,7 @@
     <v-divider class="mt-2 ml-3 mr-3"></v-divider>
 
     <v-list>
-        <v-list-item
-          v-for="[icon, text, link] in links"
-          :key="icon"
-          :prepend-icon="icon"
-        >
+        <v-list-item v-for="[icon, text, link] in links" :key="icon" :prepend-icon="icon">
           <RouterLink class="menu-link" :to="link">{{ text }}</RouterLink>  
         </v-list-item>
     </v-list>
@@ -35,8 +29,8 @@
       drawer: null,
       links: [
         ['mdi-account', 'Utilisateurs', '/users'],
-        ['mdi-account-edit', 'Contenu Personnalisé', '/users'],
-        ['mdi-pencil', 'Contenu', '/users']
+        ['mdi-account-edit', 'Contenus Personnalisés', '/users'],
+        ['mdi-pencil', 'Contenus', '/contents']
       ],
     })
   }
@@ -48,6 +42,7 @@
     color: #fff;
     text-decoration: none;
     opacity: 0.8;
+
   }
 
 </style>

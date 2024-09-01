@@ -49,23 +49,25 @@ const router = createRouter({
       name: 'UserPhotoAdd',
       props: true,
       component: () => import('../pages/user-add-photo-page.vue')
-    },
-    // 
+    }, 
     {
-      path: '/content-list',
+      path: '/contents',
       name: 'ContentList',
       props: true,
       component: () => import('../pages/content-list-page.vue')
     },
-    // 
-    // {
-    //   path: '/about',
-    //   name: 'about',
-    //   // route level code-splitting
-    //   // this generates a separate chunk (About.[hash].js) for this route
-    //   // which is lazy-loaded when the route is visited.
-    //   component: () => import('../views/AboutView.vue')
-    // }
+    {
+      path: '/contents/add',
+      name: 'ContentAdd',
+      props: true,
+      component: () => import('../pages/content-add-page.vue')
+    },
+    {
+      path: '/contents/:id',
+      name: 'ContentsById',
+      props: true,
+      component: () => import('../pages/content-update-page.vue')
+    },
   ]
 })
 

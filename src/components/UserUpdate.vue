@@ -1,10 +1,16 @@
 <script setup>
 
-  import { ref } from 'vue'
+  import { ref, inject } from 'vue'
   import { useRoute, useRouter } from 'vue-router'
-  import { doc, getDoc, setDoc, getFirestore } from 'firebase/firestore';
   import config from '../config'
   import appUtils from '/src/assets/js/app-utils'
+
+  const {
+    doc,
+    getDoc,
+    setDoc,
+    getFirestore
+  } = inject('firestore')
 
   const {
     obectFormatstrings,
@@ -29,8 +35,9 @@
   })
 
   const userMessage = ref('')
-  const isActive = ref(false)
+  const backdropIsActive = ref(false)
   const backdropColor = ref('blue')
+  const messageElShowing = ref(false)
   const userId = ref(id);
 
   const User = {
@@ -55,7 +62,7 @@
   const UIConfirm = () => {
     const { fr, eng } = confirmation.value
     assignUserMessage(fr)
-    isActive.value = true
+    backdropIsActive.value = true
     console.info(`[INFO] ${ eng }`)
     userMessageFadeOut()
   }
@@ -64,7 +71,7 @@
     backdropColor.value = 'red'
     const { fr, eng } = errMessage.value
     assignUserMessage(fr)
-    isActive.value = true
+    backdropIsActive.value = true
     console.error(`[ERROR] ${ eng }`)
     console.error(extractErrContent(err))
     userMessageFadeOut()
@@ -72,10 +79,12 @@
 
   const assignUserMessage = msg => {
     userMessage.value = msg
+    backdropIsActive.value = true
+    messageElShowing.value = true
   }
 
   const userMessageFadeOut = () => {
-    setTimeout(() => isActive.value = false, DELAY)
+    setTimeout(() => backdropIsActive.value = false, DELAY)
   }
 
   const redirect = () => {
@@ -115,7 +124,7 @@
 
     <v-main>
 
-      <v-container class="py-8 px-6 form-container" fluid >
+      <v-container class="py-8 pr-6 form-container main-container-padding-left" fluid >
 
         <RouterLink class="page-back" title="Retour" :to="'/users'">
           <button class="mdi mdi-arrow-left-bold"></button>
@@ -171,9 +180,11 @@
         <button class="mdi mdi-camera-plus user-add"></button>
       </RouterLink>
 
-      <div id="confirmation-holder" :class=" isActive === true ? 'fadein' : 'fadeout' ">
+      <div id="confirmation-holder" :class=" backdropIsActive === true ? 'fadein' : 'fadeout' ">
         <div id="backdrop-el" :class=" backdropColor "></div>
-        <div id="messagebox-el">{{ userMessage }}</div>
+        <div id="messagebox-el" :class=" messageElShowing === true ? 'showing' : '' ">
+          {{ userMessage }}
+        </div>
       </div>
 
     </v-main>

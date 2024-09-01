@@ -96,7 +96,7 @@
   }
 
   const redirect = () => {
-    setTimeout(() => router.push('/users'), 1500)
+    setTimeout(() => router.push('/users'), DELAY)
   }
 
   const submitForm = async() => {
@@ -132,7 +132,7 @@
 
     <v-main>
 
-      <v-container class="py-8 px-6 form-container" fluid >
+      <v-container class="py-8 pr-6 form-container main-container-padding-left" fluid >
 
           <RouterLink class="page-back" title="Retour" :to="'/users'">
             <button class="mdi mdi-arrow-left-bold"></button>

@@ -595,7 +595,7 @@
 
     <v-main>
 
-      <v-container class="py-8 px-6 form-container" fluid >
+      <v-container class="py-8 pr-6 form-container main-container-padding-left" fluid >
 
           <RouterLink class="page-back" title="Retour" :to="'/users'">
             <button class="mdi mdi-arrow-left-bold"></button>
@@ -944,7 +944,7 @@
     width: 100%;
     z-index: 1200;
     transition: transform .75s ease-out;
-    transform: translateY(0px);
+    transform: translateX(0px);
     will-change: transform;
   }
 
