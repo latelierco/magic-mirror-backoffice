@@ -147,7 +147,6 @@
   const docRef = doc(db, 'users', userId)
   const snap = await getDoc(docRef)
   User.current = Object.assign({}, snap.data(), { id: userId })
-  console.debug('User.current', User.current)
 
   const UISuspend = () => {
     backdropColor.value = 'blue'
@@ -363,8 +362,6 @@
 
   const videoSetup = () => {
 
-    console.debug('videoSetup video', video)
-    console.debug('video.addEventListener', typeof video.addEventListener)
 
     video.addEventListener(
       'canplay',
@@ -394,8 +391,6 @@
   const videoToCanvas = () => {
     video.removeEventListener('play', videoDraw)
     video.addEventListener('play', videoDraw)
-    console.debug('videoToCanvas video', video)
-    console.debug('video.addEventListener', typeof video.addEventListener)
   }
 
   const videoDraw = () => {
@@ -423,7 +418,6 @@
     backdropColor.value = 'blue'
 
     const element = getEventElement(e)
-    console.debug('element', element)
     featured.value = getPhotoIndex(element)
 
     stripList.value = getStripList()
@@ -484,8 +478,6 @@
   }
 
   const isPhotoStripsLast = () => {
-    console.debug('stripList.value.length', stripList.value.length)
-    console.debug('featured.value', featured.value)
     return stripList.value.length === featured.value
   }
 

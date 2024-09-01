@@ -9,6 +9,12 @@ const config = {
 	},
 	USER_GROUP: 'latelier-co',
 	CONTENT: {
+		MMM_MODULE_NAMES: [
+			{
+				label: 'Message de bienvenue générique de l\'atelier',
+				value: 'MMM-generic-welcome'			
+			}
+		],
 		VISIBLE_INTENSITIES: [
 			{
 				label: 'Sombre',

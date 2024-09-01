@@ -24,6 +24,7 @@
   const {
     DELAY,
     CONTENT: {
+      MMM_MODULE_NAMES,
       VISIBLE_INTENSITIES,
       PAGE_POSTIONS,
       FONT_SIZES,
@@ -42,6 +43,7 @@
     eng: 'Creating content caused an error',
   })
 
+  const moduleNames = ref(MMM_MODULE_NAMES)
   const contentPositions = ref(PAGE_POSTIONS)
   const visibleIntensities = ref(VISIBLE_INTENSITIES)
   const fontSizes = ref(FONT_SIZES)
@@ -56,7 +58,8 @@
 
   const Content = {
     current: {
-      contentName: '',
+      module_name: '',
+      content_name: '',
       name: '',
       intensity: 'bright',
       font_size: 'semi-medium',
@@ -70,16 +73,11 @@
     },
     save: async() => {
       try {
-        console.debug('Content.current.active', Content.current.active)
         Content.current.date = getDate()
         Content.current.name = capitalize(Content.current.name)
-        console.debug('Content.current.name', Content.current.name)
-        Content.current.contentName = slugify(Content.current.name)
+        Content.current.content_name = slugify(Content.current.name)
         Content.current.active = Content.current.activeRadioButton === 'TRUE' && true || false
-
-        console.debug('Content.current.activeRadioButton', Content.current.activeRadioButton)
-        console.debug('Content', Content)
-
+        delete Content.current.activeRadioButton
         await addDoc(collection(db, 'contents'), Content.current)
       } catch(err) {
         throw Error('Error: saving content to firebase has caused an error', { cause: err })
@@ -163,11 +161,19 @@
 
           <v-divider class="h1-hr-main"></v-divider>
 
+          <label for="content_module">Nom du module MagicMirror</label>
+          <select id="content_module" name="content_module" class="latelier-form-input mt-2 mb-4" v-model="Content.current.module_name">
+            <option value="NONE">---</option>
+            <option v-for="module in moduleNames" :value="module.value">
+              {{ module.label }}
+            </option>
+          </select>
+
           <label for="content_name">Nom du Contenu</label>
-          <input type="text" class="latelier-form-input mt-2 mb-4" id="content_name" name="content_name" placeholder="Nom du Contenu" v-model="Content.current.name"/>
+          <input type="text" class="latelier-form-input content-management-form-input mt-2 mb-4" id="content_name" name="content_name" placeholder="Nom du Contenu" v-model="Content.current.name"/>
 
           <label for="content_position">Position</label>
-          <select id="content_position" name="content_position" class="latelier-form-input mt-2 mb-4" v-model="Content.current.position">
+          <select id="content_position" name="content_position" class="latelier-form-input content-management-form-input mt-2 mb-4" v-model="Content.current.position">
             <option value="NONE">---</option>
             <option v-for="position in contentPositions" :value="position.value">
               {{ position.label }}

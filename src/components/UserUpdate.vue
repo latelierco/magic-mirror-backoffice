@@ -13,6 +13,7 @@
   } = inject('firestore')
 
   const {
+    slugify,
     obectFormatstrings,
     extractErrContent
   } = appUtils
@@ -45,6 +46,7 @@
     stringFormat: () => obectFormatstrings(User.current),
     save: async() => {
       try {
+        User.current.user_name = slugify(User.current.name_first)
         await setDoc(doc(db, 'users', userId.value), User.current)
       } catch(err) {
         throw Error('Error: saving user to firebase has caused an error', { cause: err })
@@ -55,9 +57,6 @@
   const docRef = doc(db, 'users', userId.value)
   const snap = await getDoc(docRef)
   User.current = Object.assign({}, snap.data(), { id: userId.value })
-
-  console.debug('userId.value', userId.value)
-  console.debug('User.current', User.current)
 
   const UIConfirm = () => {
     const { fr, eng } = confirmation.value

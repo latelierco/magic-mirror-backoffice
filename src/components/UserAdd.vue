@@ -15,9 +15,9 @@
 
 
   const {
+    slugify,
     obectFormatstrings,
-    extractErrContent,
-    slugify
+    extractErrContent
   } = appUtils
 
   const router = useRouter()
@@ -58,8 +58,7 @@
     stringFormat: () => obectFormatstrings(User.current),
     save: async() => {
       try {
-        const userName = slugify(User.current.name_first)
-        User.current.user_name = userName
+        User.current.user_name = slugify(User.current.name_first)
         await addDoc(collection(db, 'users'), User.current)
       } catch(err) {
         throw Error('Error: saving user to firebase has caused an error', { cause: err })

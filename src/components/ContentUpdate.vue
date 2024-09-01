@@ -27,6 +27,7 @@
   const {
     DELAY,
     CONTENT: {
+      MMM_MODULE_NAMES,
       VISIBLE_INTENSITIES,
       PAGE_POSTIONS,
       FONT_SIZES,
@@ -45,6 +46,7 @@
     eng: 'Updating content caused an error',
   })
 
+  const moduleNames = ref(MMM_MODULE_NAMES)
   const contentPositions = ref(PAGE_POSTIONS)
   const visibleIntensities = ref(VISIBLE_INTENSITIES)
   const fontSizes = ref(FONT_SIZES)
@@ -59,7 +61,8 @@
 
   const Content = {
     current: {
-      contentName: '',
+      module_name: '',
+      content_name: '',
       name: '',
       intensity: 'bright',
       font_size: 'semi-medium',
@@ -75,8 +78,9 @@
       try {
         Content.current.date = getDate()
         Content.current.name = capitalize(Content.current.name)
-        Content.current.contentName = slugify(Content.current.name)
+        Content.current.content_name = slugify(Content.current.name)
         Content.current.active = Content.current.activeRadioButton === 'TRUE' && true || false
+        delete Content.current.activeRadioButton
         await setDoc(doc(db, 'contents', contentId.value), Content.current)
       } catch(err) {
         throw Error('Error: saving content to firebase has caused an error', { cause: err })
@@ -164,6 +168,14 @@
           <h1 class="h1-main">Contenu</h1>
 
           <v-divider class="h1-hr-main"></v-divider>
+
+          <label for="content_module">Nom du module MagicMirror</label>
+          <select id="content_module" name="content_module" class="latelier-form-input mt-2 mb-4" v-model="Content.current.module_name">
+            <option value="NONE">---</option>
+            <option v-for="module in moduleNames" :value="module.value">
+              {{ module.label }}
+            </option>
+          </select>
 
           <label for="content_name">Nom du Contenu</label>
           <input type="text" class="latelier-form-input mt-2 mb-4" id="content_name" name="content_name" placeholder="Nom du Contenu" v-model="Content.current.name"/>

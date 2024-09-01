@@ -212,7 +212,7 @@
   .latelier-form-input {
     background-color: #fff;
     border-radius: 2px;
-    width: 400px;
+    width: 600px;
     padding: 3px 10px;
     font-size: 25px;
     color: #797979;
