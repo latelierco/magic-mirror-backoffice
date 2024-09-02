@@ -6,7 +6,12 @@
   import appUtils from '/src/assets/js/app-utils'
 
   const {
+    doc,
+    where,
+    query,
     addDoc,
+    setDoc,
+    getDocs,
     collection,
     getFirestore
   } = inject('firestore')
@@ -17,7 +22,11 @@
     capitalize,
     extractErrContent,
     slugify,
-    getDate
+    getDate,
+    areStringsNotEmpty,
+    isDateFormatValid,
+    isRadioValueValid,
+    isContentActiveValid
   } = appUtils
 
   const router = useRouter()
@@ -59,14 +68,14 @@
   const Content = {
     current: {
       module_name: '',
-      content_name: '',
+      content_name: 'Message de bienvenue xxxyyyzzz',
       name: '',
       intensity: 'bright',
       font_size: 'semi-medium',
       font_weight: 'regular',
       text_align: 'align-center',
       position: 'top_bar',
-      text: '',
+      text: 'Message de bienvenue xxxyyyzzz',
       date: '',
       activeRadioButton: 'TRUE',
       active: true
@@ -117,8 +126,56 @@
     setTimeout(() => router.push('/contents'), DELAY)
   }
 
+  const deactivateOtherContent = async() => {
+    try {
+      const active = Content.current.activeRadioButton === 'TRUE' && true || false
+      if (active === false)
+        return
+      const contents = await getAllContentsByModule()
+      await iterateDeactivate(contents)
+    } catch(err) {
+      console.error(err)
+    }
+  }
+
+  const getAllContentsByModule = async() => {
+    let contents = []
+    const q = query(collection(db, 'contents'), where('module_name', '==', Content.current.module_name))
+    const snap = await getDocs(q)
+    snap.forEach(doc => {
+      const data = doc.data()
+      contents.push(Object.assign({}, { id: doc.id }, data))
+    })
+    return contents
+  }
+
+  const iterateDeactivate = async(contents) => {
+    const sequence = async(content) => {
+      content.active = false
+      await setDoc(doc(db, 'contents', content.id), content)
+    }
+
+    const ps = contents
+      .map(async(content) => await sequence(content))
+
+    console.debug('iterateDeactivate start 1')
+    return Promise.all(ps)
+  }
+
+  const isPayloadValid = () => {
+    try {
+      appUtils.areStringsNotEmpty()
+      appUtils.isDateFormatValid()
+      appUtils.isRadioValueValid()
+      appUtils.isContentActiveValid()
+    } catch(err) {
+      console.error(err)
+    }
+  }
+
   const submitForm = async() => {
     try {
+      await deactivateOtherContent()
       await Content.save()
       UIConfirm()
       redirect()
