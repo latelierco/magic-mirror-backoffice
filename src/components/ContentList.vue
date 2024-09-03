@@ -125,7 +125,7 @@
 
     <v-main>
 
-      <v-container class="py-8 pr-6 main-container-padding-left" fluid >
+      <v-container class="py-8 pr-6 pl-16" fluid >
 
         <v-list-subheader></v-list-subheader>
 

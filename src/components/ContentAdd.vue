@@ -68,14 +68,14 @@
   const Content = {
     current: {
       module_name: '',
-      content_name: 'Message de bienvenue xxxyyyzzz',
+      content_name: '',
       name: '',
       intensity: 'bright',
       font_size: 'semi-medium',
       font_weight: 'regular',
       text_align: 'align-center',
       position: 'top_bar',
-      text: 'Message de bienvenue xxxyyyzzz',
+      text: '',
       date: '',
       activeRadioButton: 'TRUE',
       active: true
@@ -206,7 +206,7 @@
 
     <v-main>
 
-      <v-container class="py-8 pr-6 form-container main-container-padding-left" fluid >
+      <v-container class="py-8 pr-6 form-container pl-16" fluid >
 
         <RouterLink class="page-back" title="Retour" :to="'/contents'">
           <button class="mdi mdi-arrow-left-bold"></button>

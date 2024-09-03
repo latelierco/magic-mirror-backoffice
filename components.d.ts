@@ -13,6 +13,7 @@ declare module 'vue' {
     ContentUpdate: typeof import('./src/components/ContentUpdate.vue')['default']
     DataModel: typeof import('./src/components/DataModel.vue')['default']
     HelloWorld: typeof import('./src/components/HelloWorld.vue')['default']
+    Index: typeof import('./src/components/Index.vue')['default']
     LeftMenu: typeof import('./src/components/LeftMenu.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']

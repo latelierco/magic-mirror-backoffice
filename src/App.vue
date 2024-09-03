@@ -28,10 +28,6 @@
     background-color: #F80086;
   }
 
-  .main-container-padding-left {
-    padding-left: 84px;
-  }
-
   #confirmation-holder,
   #backdrop-el,
   #messagebox-el {

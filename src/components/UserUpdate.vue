@@ -123,7 +123,7 @@
 
     <v-main>
 
-      <v-container class="py-8 pr-6 form-container main-container-padding-left" fluid >
+      <v-container class="py-8 pr-6 form-container pl-16" fluid >
 
         <RouterLink class="page-back" title="Retour" :to="'/users'">
           <button class="mdi mdi-arrow-left-bold"></button>
