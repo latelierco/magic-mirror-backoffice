@@ -280,6 +280,7 @@
     font-size: 28px;
   }
 
+  .logout-holder,
   .user-add-holder,
   .content-add-holder {
     opacity: .4;
@@ -295,7 +296,11 @@
     background-color: #06326C;
   }
 
+  .logout-holder {
+    top: 40px;
+  }
 
+  .logout-button,
   .user-add,
   .content-add,
   .page-back {
@@ -307,13 +312,18 @@
     left: 1px;
   }
 
+  .logout-button {
+    font-size: 36px;
+    top: -6px;
+    left:3px;
+  }
 
   .user-add-holder:hover,
   .content-add-holder:hover {
     opacity: .8;
   }
 
-
+  .logout-button,
   .user-add,
   .content-add {
     position: absolute;

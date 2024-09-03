@@ -8,10 +8,6 @@
 // Composables
 import { createRouter, createWebHistory } from 'vue-router/auto'
 
-// import { routes } from 'vue-router/auto-routes'
-import index from '../pages/index';
-// import users from '../pages/users';
-
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -20,7 +16,7 @@ const router = createRouter({
     {
       path: '/',
       name: 'home',
-      component: index
+      component: () => import('../pages/index-page.vue')
     },
     {
       path: '/users',

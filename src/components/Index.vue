@@ -34,10 +34,8 @@
 
 
   const submitForm = async e => {
-    e.preventDefault()
 
-    console.debug('email', Credentials.current.email)
-    console.debug('password', Credentials.current.password)
+    e.preventDefault()
 
     try {
       const userCredential = await signin(Credentials.current.email, Credentials.current.password)

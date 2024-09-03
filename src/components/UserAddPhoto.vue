@@ -579,9 +579,7 @@
 
   <v-app id="inspire">
 
-    <v-system-bar>
-      <v-spacer></v-spacer>
-    </v-system-bar>
+    <Logout />
 
     <LeftMenu/>
 

@@ -1,6 +1,8 @@
 <script setup>
 
   import { ref, inject, onMounted } from 'vue'
+  import config from '../config'
+  import appUtils from '/src/assets/js/app-utils'
 
   const {
     collection,
@@ -12,9 +14,6 @@
   } = inject('firestore')
 
   const db = getFirestore()
-
-  import config from '../config'
-  import appUtils from '/src/assets/js/app-utils'
 
 
   const suspendMesssage = ref({
@@ -148,8 +147,6 @@
 
   onMounted(async() => await populate())
 
-
-
 </script>
 
 
@@ -157,17 +154,7 @@
 
   <v-app id="inspire">
 
-    <v-system-bar>
-
-      <v-spacer></v-spacer>
-
-      <v-icon>mdi-square</v-icon>
-
-      <v-icon>mdi-circle</v-icon>
-
-      <v-icon>mdi-triangle</v-icon>
-
-    </v-system-bar>
+    <Logout />
 
     <LeftMenu/>
 
