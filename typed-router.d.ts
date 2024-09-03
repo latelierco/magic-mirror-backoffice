@@ -23,6 +23,7 @@ declare module 'vue-router/auto-routes' {
     '/content-list-page': RouteRecordInfo<'/content-list-page', '/content-list-page', Record<never, never>, Record<never, never>>,
     '/content-update-page': RouteRecordInfo<'/content-update-page', '/content-update-page', Record<never, never>, Record<never, never>>,
     '/data-model-page': RouteRecordInfo<'/data-model-page', '/data-model-page', Record<never, never>, Record<never, never>>,
+    '/index-page': RouteRecordInfo<'/index-page', '/index-page', Record<never, never>, Record<never, never>>,
     '/user-add-page': RouteRecordInfo<'/user-add-page', '/user-add-page', Record<never, never>, Record<never, never>>,
     '/user-add-photo-page': RouteRecordInfo<'/user-add-photo-page', '/user-add-photo-page', Record<never, never>, Record<never, never>>,
     '/user-list-page': RouteRecordInfo<'/user-list-page', '/user-list-page', Record<never, never>, Record<never, never>>,
